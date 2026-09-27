@@ -22,3 +22,7 @@ An answer that contradicts a document-confirmed value creates a conflict instead
 Adjudicated values stay `confirmed` with a marker rather than becoming a sixth status, so readiness remains a five-value switch. The candidate that lost is kept and shown in the report — a traceability tool that deletes the evidence it decided against is arguing against itself.
 
 The dossier panel navigates and displays but never edits. Inline editing would reintroduce the second resolution path this decision exists to avoid.
+
+## Later narrowing
+
+ADR 0006 narrows the consequence that every adjudicated value stays confirmed. A documented winner stays confirmed. A value the user supplies stays user-provided. Both remain marked adjudicated, and the losing candidates are retained.

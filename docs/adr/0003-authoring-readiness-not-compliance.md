@@ -16,3 +16,7 @@ The assessment audience is Pergamon’s CTO, and the product sits next to GPSR, 
 ## Consequences
 
 UI copy, `PROPOSAL.md`, and the live demo must say “information completeness / authoring readiness,” never “EU-compliant.” User-provided values stay visually distinct from document-confirmed ones. Field importance is a prototype workflow ranking, not a statement that the field is legally mandatory.
+
+## Clarification
+
+2026-09-27: an unadjudicated conflict blocks readiness only when its field is essential. A supporting conflict stays visible and never blocks readiness. This matches the supporting-field rule that those fields enrich the dossier without blocking it.
