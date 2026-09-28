@@ -188,7 +188,7 @@ function applyAdjudicate(
 
     return {
       ...field,
-      status: "confirmed",
+      status: winner.source === "document" ? "confirmed" : "user-provided",
       originalValue: winner.value,
       normalizedValue: winner.normalizedValue,
       markers: field.markers.includes("adjudicated")
