@@ -138,6 +138,23 @@ describe("extractFixture", () => {
     });
   });
 
+  it("rejects with internal-error when the server returns non-JSON HTML", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("<html><body>timeout</body></html>", {
+          status: 500,
+          headers: { "Content-Type": "text/html" },
+        }),
+      ),
+    );
+
+    await expect(extractFixture("recorded")).rejects.toMatchObject({
+      code: "internal-error",
+      message: "Unexpected server error.",
+    });
+  });
+
   it("rejects with network code when fetch throws", async () => {
     vi.stubGlobal(
       "fetch",
