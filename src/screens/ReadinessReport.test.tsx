@@ -40,6 +40,54 @@ function readyDossier(): DossierField[] {
   );
 }
 
+const documentConflictCandidates = [
+  {
+    value: "1.5 L",
+    normalizedValue: "1.5 L",
+    source: "document" as const,
+  },
+  {
+    value: "1.7 L",
+    normalizedValue: "1.7 L",
+    source: "document" as const,
+  },
+];
+
+const materialsConflictCandidates = [
+  {
+    value: "Stainless steel",
+    normalizedValue: "Stainless steel",
+    source: "document" as const,
+  },
+  {
+    value: "Plastic",
+    normalizedValue: "Plastic",
+    source: "document" as const,
+  },
+];
+
+function dossierWithEssentialAndSupportingConflicts(): DossierField[] {
+  return readyDossier().map((entry) => {
+    if (entry.key === "capacity") {
+      return field("capacity", {
+        status: "conflicting",
+        originalValue: ["1.5 L", "1.7 L"],
+        normalizedValue: ["1.5 L", "1.7 L"],
+        conflictCandidates: documentConflictCandidates,
+      });
+    }
+    if (entry.key === "primary-materials") {
+      return field("primary-materials", {
+        status: "conflicting",
+        originalValue: ["Stainless steel", "Plastic"],
+        normalizedValue: ["Stainless steel", "Plastic"],
+        conflictCandidates: materialsConflictCandidates,
+      });
+    }
+    return entry;
+  });
+}
+
 describe("ReadinessReport", () => {
   afterEach(() => {
     cleanup();
@@ -100,6 +148,55 @@ describe("ReadinessReport", () => {
       screen.getByText(/no conflict remains unadjudicated — capacity/i),
     ).toBeInTheDocument();
     expect(screen.getByText(/no essential field is missing$/i)).toBeInTheDocument();
+  });
+
+  it("names only essential conflicts in the readiness criterion", () => {
+    render(
+      <ReadinessReport
+        dossier={dossierWithEssentialAndSupportingConflicts()}
+        mode="recorded"
+        onBackToInterview={vi.fn()}
+        onRestart={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText("No conflict remains unadjudicated — Capacity"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/no conflict remains unadjudicated — capacity, primary materials/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows supporting conflicts separately and says they do not block readiness", () => {
+    render(
+      <ReadinessReport
+        dossier={dossierWithEssentialAndSupportingConflicts()}
+        mode="recorded"
+        onBackToInterview={vi.fn()}
+        onRestart={vi.fn()}
+      />,
+    );
+
+    const blockingHeading = screen.getByRole("heading", {
+      name: /blocking conflicts/i,
+    });
+    const supportingHeading = screen.getByRole("heading", {
+      name: /supporting conflicts/i,
+    });
+    const blockingSection = blockingHeading.parentElement!;
+    const supportingSection = supportingHeading.parentElement!;
+
+    expect(within(blockingSection).getByText("Capacity")).toBeInTheDocument();
+    expect(
+      within(blockingSection).queryByText("Primary materials"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(supportingSection).getByText("Primary materials"),
+    ).toBeInTheDocument();
+    expect(
+      within(supportingSection).getByText("These do not block readiness."),
+    ).toBeInTheDocument();
   });
 
   it("splits declared-unavailable from never-investigated missing essentials", () => {
@@ -174,10 +271,59 @@ describe("ReadinessReport", () => {
       />,
     );
 
+    const adjudicatedSection = screen.getByRole("heading", {
+      name: /adjudicated values/i,
+    }).parentElement!;
+
+    expect(within(adjudicatedSection).getByText("Confirmed")).toBeInTheDocument();
     expect(screen.getByText(/not chosen: 1\.7 l/i)).toBeInTheDocument();
     expect(
       screen.getByText(/draft-manual, p\.2 · evidence retained/i),
     ).toBeInTheDocument();
+  });
+
+  it("shows user-provided status on an adjudicated user-supplied winner", () => {
+    const dossier = readyDossier().map((entry) =>
+      entry.key === "capacity"
+        ? field("capacity", {
+            status: "user-provided",
+            originalValue: "1.6 L",
+            normalizedValue: "1.6 L",
+            markers: ["adjudicated"],
+            adjudicatedLosers: [
+              {
+                value: "1.5 L",
+                normalizedValue: "1.5 L",
+                citation: {
+                  documentId: "supplier-spec",
+                  page: 2,
+                  quote: "1.5 L",
+                },
+                source: "document",
+              },
+            ],
+          })
+        : entry,
+    );
+
+    render(
+      <ReadinessReport
+        dossier={dossier}
+        mode="recorded"
+        onBackToInterview={vi.fn()}
+        onRestart={vi.fn()}
+      />,
+    );
+
+    const adjudicatedSection = screen.getByRole("heading", {
+      name: /adjudicated values/i,
+    }).parentElement!;
+
+    expect(
+      within(adjudicatedSection).getByText("User-provided"),
+    ).toBeInTheDocument();
+    expect(within(adjudicatedSection).getByText("Adjudicated")).toBeInTheDocument();
+    expect(within(adjudicatedSection).getByText(/not chosen: 1\.5 l/i)).toBeInTheDocument();
   });
 
   it("lists unverified and user-provided values and rejected candidate reasons", () => {
