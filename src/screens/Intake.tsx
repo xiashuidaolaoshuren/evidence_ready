@@ -115,7 +115,7 @@ export function Intake({ onStartBundled, onStartUpload }: IntakeProps) {
           <label className="dropzone" htmlFor={fileInputId}>
             <strong className="text-[var(--fg)]">Choose PDF or TXT files</strong>
             <p className="note mt-[6px] mb-0">
-              Up to 3 files · 10 MB each · text-based PDF only
+              Up to 3 files · 4 MB total · text-based PDF only
             </p>
           </label>
           <input

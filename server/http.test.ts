@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import { ModelError } from "./model.js";
-import { createApp, MAX_UPLOAD_BYTES } from "./http.js";
+import { createApp, MAX_TOTAL_UPLOAD_BYTES } from "./http.js";
 import type { DossierField } from "../src/domain/types.js";
 import type { RunExtractionInput, RunExtractionResult } from "./pipeline.js";
 
@@ -163,7 +163,7 @@ describe("POST /api/extract intake validation", () => {
         const form = new FormData();
         form.append(
           "files",
-          new File([new Uint8Array(MAX_UPLOAD_BYTES + 1)], "big.pdf", {
+          new File([new Uint8Array(MAX_TOTAL_UPLOAD_BYTES + 1)], "big.pdf", {
             type: "application/pdf",
           }),
         );

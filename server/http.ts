@@ -19,16 +19,16 @@ import {
   type ModelTransport,
 } from "./model.js";
 import {
-  MAX_UPLOAD_BYTES,
+  MAX_TOTAL_UPLOAD_BYTES,
   MAX_UPLOAD_COUNT,
   validateIntakeUploads,
 } from "./intake.js";
 import { PdfExtractError } from "./pdf.js";
 
-export { MAX_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "./intake.js";
+export { MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "./intake.js";
 
 export const DEFAULT_MAX_REQUEST_BYTES =
-  MAX_UPLOAD_COUNT * MAX_UPLOAD_BYTES + 256 * 1024;
+  MAX_TOTAL_UPLOAD_BYTES + 64 * 1024;
 
 export interface ApiErrorBody {
   error: {
