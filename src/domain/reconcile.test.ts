@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { KETTLE_FIELDS } from "./fields.js";
-import { reconcileCandidates, type VerifiedCandidate } from "./reconcile.js";
-import type { DossierField, Evidence, RejectedCandidate } from "./types.js";
+import { KETTLE_FIELDS } from "./fields";
+import { reconcileCandidates, type VerifiedCandidate } from "./reconcile";
+import type { DossierField, Evidence, RejectedCandidate } from "./types";
 
 function verified(
   fieldKey: string,

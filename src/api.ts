@@ -3,7 +3,7 @@ import type {
   ExtractionMode,
   Proposal,
   RejectedCandidate,
-} from "./domain/types.js";
+} from "./domain/types";
 
 export interface ExtractionCounts {
   extracted: number;

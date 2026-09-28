@@ -3,7 +3,7 @@ import {
   checkUploadBudget,
   MAX_TOTAL_UPLOAD_BYTES,
   MAX_UPLOAD_COUNT,
-} from "./upload-limits.js";
+} from "./upload-limits";
 
 const FOUR_MB = 4 * 1024 * 1024;
 

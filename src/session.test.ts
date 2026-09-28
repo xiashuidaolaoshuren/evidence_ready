@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { loadSession, saveSession, clearSession } from "./session.js";
-import type { DossierField, InterviewState } from "./domain/types.js";
+import { loadSession, saveSession, clearSession } from "./session";
+import type { DossierField, InterviewState } from "./domain/types";
 
 const store = new Map<string, string>();
 

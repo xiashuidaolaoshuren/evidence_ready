@@ -2,9 +2,9 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import App from "./App.js";
-import * as api from "./api.js";
-import * as session from "./session.js";
+import App from "./App";
+import * as api from "./api";
+import * as session from "./session";
 
 vi.mock("./api.js", () => ({
   ApiError: class ApiError extends Error {

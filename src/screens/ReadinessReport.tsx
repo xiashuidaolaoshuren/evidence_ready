@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ModeBadge } from "@/components/ModeBadge";
-import { authoringReadiness } from "@/domain/readiness.js";
-import type { DossierField, Evidence, ExtractionMode } from "@/domain/types.js";
-import { DossierPanel } from "./DossierPanel.js";
-import { formatFieldValue } from "./source-labels.js";
-import { SourceDrawer } from "./SourceDrawer.js";
+import { authoringReadiness } from "@/domain/readiness";
+import type { DossierField, Evidence, ExtractionMode } from "@/domain/types";
+import { DossierPanel } from "./DossierPanel";
+import { formatFieldValue } from "./source-labels";
+import { SourceDrawer } from "./SourceDrawer";
 
 export interface ReadinessReportProps {
   dossier: DossierField[];

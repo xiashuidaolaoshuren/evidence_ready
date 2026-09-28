@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { KETTLE_FIELDS, essentialKeys } from "./fields.js";
-import type { DossierField, FieldStatus, ProvenanceMarker } from "./types.js";
-import { ESSENTIAL_COVERAGE_THRESHOLD, assessCoverage } from "./coverage.js";
+import { KETTLE_FIELDS, essentialKeys } from "./fields";
+import type { DossierField, FieldStatus, ProvenanceMarker } from "./types";
+import { ESSENTIAL_COVERAGE_THRESHOLD, assessCoverage } from "./coverage";
 
 function dossier(
   statuses: Partial<Record<string, FieldStatus>> = {},

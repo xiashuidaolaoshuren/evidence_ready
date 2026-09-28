@@ -1,22 +1,22 @@
-export { essentialKeys, KETTLE_FIELDS, type FieldDefinition } from "./fields.js";
+export { essentialKeys, KETTLE_FIELDS, type FieldDefinition } from "./fields";
 export {
   applyEvent,
   parseAnswer,
   type ApplyEvent,
   type ApplyResult,
-} from "./apply.js";
+} from "./apply";
 export {
   assessCoverage,
   ESSENTIAL_COVERAGE_THRESHOLD,
-} from "./coverage.js";
-export { normalizeValue } from "./normalize.js";
+} from "./coverage";
+export { normalizeValue } from "./normalize";
 export {
   nextQuestion,
   shouldPause,
   SOFT_CAP,
   type Question,
   type QuestionShape,
-} from "./planner.js";
+} from "./planner";
 export {
   extractionPrompt,
   interpretPrompt,
@@ -24,7 +24,7 @@ export {
   type InterpretPromptInput,
   type PromptDocument,
   type PromptDocumentPage,
-} from "./prompt.js";
+} from "./prompt";
 export {
   authoringReadiness,
   READINESS_VERDICTS,
@@ -32,19 +32,19 @@ export {
   type ReadinessBlocker,
   type ReadinessResult,
   type ReadinessVerdict,
-} from "./readiness.js";
+} from "./readiness";
 export {
   reconcileCandidates,
   type ReconcileInput,
   type VerifiedCandidate,
-} from "./reconcile.js";
+} from "./reconcile";
 export {
   extractionResponseSchema,
   proposalSchema,
   type ExtractionResponse,
   type ProposalResponse,
-} from "./schemas.js";
-export { captureWindow, verifyCitation, WINDOW_RADIUS } from "./verify.js";
+} from "./schemas";
+export { captureWindow, verifyCitation, WINDOW_RADIUS } from "./verify";
 export {
   EXTRACTION_MODES,
   FIELD_STATUSES,
@@ -69,4 +69,4 @@ export {
   type RejectedCandidate,
   type ResolutionEvent,
   type ValueKind,
-} from "./types.js";
+} from "./types";

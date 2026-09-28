@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractionResponseSchema } from "./schemas.js";
+import { extractionResponseSchema } from "./schemas";
 
 const validCandidate = {
   fieldKey: "capacity",

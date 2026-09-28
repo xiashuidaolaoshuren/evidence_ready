@@ -1,4 +1,4 @@
-import { KETTLE_FIELDS } from "./fields.js";
+import { KETTLE_FIELDS } from "./fields";
 
 export interface PromptDocumentPage {
   pageNumber: number;

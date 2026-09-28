@@ -4,7 +4,7 @@ import {
   FIELD_TIERS,
   PROVENANCE_MARKERS,
   VALUE_KINDS,
-} from "./types.js";
+} from "./types";
 
 const extractionCandidateSchema = z.object({
   fieldKey: z.string(),

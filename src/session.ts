@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { dossierSchema } from "./domain/schemas.js";
-import { EXTRACTION_MODES } from "./domain/types.js";
+import { dossierSchema } from "./domain/schemas";
+import { EXTRACTION_MODES } from "./domain/types";
 import type {
   DossierField,
   ExtractionMode,
   InterviewState,
   RejectedCandidate,
   Evidence,
-} from "./domain/types.js";
+} from "./domain/types";
 
 export const SESSION_STORAGE_KEY = "evidenceready.session";
 

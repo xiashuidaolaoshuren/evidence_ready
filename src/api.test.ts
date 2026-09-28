@@ -6,7 +6,7 @@ import {
   interpretAnswer,
   postExtractStream,
   type ExtractResponse,
-} from "./api.js";
+} from "./api";
 
 function sseResultResponse(result: ExtractResponse): Response {
   const body = `event: result\ndata: ${JSON.stringify({ type: "result", result })}\n\n`;

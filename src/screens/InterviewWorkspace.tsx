@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
-import { ApiError, interpretAnswer } from "@/api.js";
+import { ApiError, interpretAnswer } from "@/api";
 import { Button } from "@/components/ui/button";
-import type { ApplyEvent } from "@/domain/apply.js";
-import { needsInterpretation, parseAnswer } from "@/domain/apply.js";
-import { nextQuestion } from "@/domain/planner.js";
-import type { DossierField, Evidence, Proposal } from "@/domain/types.js";
-import type { InterviewState } from "@/domain/types.js";
-import { BudgetPause } from "./BudgetPause.js";
-import { DossierPanel } from "./DossierPanel.js";
-import { ProposalConfirmation } from "./ProposalConfirmation.js";
-import { QuestionPanel } from "./QuestionPanel.js";
-import { SourceDrawer } from "./SourceDrawer.js";
+import type { ApplyEvent } from "@/domain/apply";
+import { needsInterpretation, parseAnswer } from "@/domain/apply";
+import { nextQuestion } from "@/domain/planner";
+import type { DossierField, Evidence, Proposal } from "@/domain/types";
+import type { InterviewState } from "@/domain/types";
+import { BudgetPause } from "./BudgetPause";
+import { DossierPanel } from "./DossierPanel";
+import { ProposalConfirmation } from "./ProposalConfirmation";
+import { QuestionPanel } from "./QuestionPanel";
+import { SourceDrawer } from "./SourceDrawer";
 
 export interface InterviewWorkspaceProps {
   dossier: DossierField[];

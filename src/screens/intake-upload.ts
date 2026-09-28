@@ -3,9 +3,9 @@ import {
   MAX_TOTAL_UPLOAD_BYTES,
   MAX_UPLOAD_COUNT,
   type UploadBudgetError,
-} from "@/domain/upload-limits.js";
+} from "@/domain/upload-limits";
 
-export { MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "@/domain/upload-limits.js";
+export { MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "@/domain/upload-limits";
 
 const TOTAL_LIMIT_LABEL = "4 MB total";
 

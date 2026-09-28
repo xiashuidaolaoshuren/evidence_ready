@@ -2,9 +2,9 @@
 import userEvent from "@testing-library/user-event";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { InterviewWorkspace } from "./InterviewWorkspace.js";
-import { interpretAnswer } from "@/api.js";
-import type { DossierField, InterviewState } from "@/domain/types.js";
+import { InterviewWorkspace } from "./InterviewWorkspace";
+import { interpretAnswer } from "@/api";
+import type { DossierField, InterviewState } from "@/domain/types";
 
 vi.mock("@/api.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/api.js")>();

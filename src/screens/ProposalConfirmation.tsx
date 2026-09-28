@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { KETTLE_FIELDS } from "@/domain/fields.js";
-import type { Proposal } from "@/domain/types.js";
+import { KETTLE_FIELDS } from "@/domain/fields";
+import type { Proposal } from "@/domain/types";
 
 export interface ProposalConfirmationProps {
   proposals: Proposal[];

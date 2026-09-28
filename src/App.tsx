@@ -6,7 +6,7 @@ import {
   initialAppState,
 } from "@/app-state";
 import { ApiError, extractFixture, extractUpload, type ProgressEvent } from "@/api";
-import type { ExtractionMode } from "@/domain/types.js";
+import type { ExtractionMode } from "@/domain/types";
 import { progressFromEvent } from "@/extraction-progress";
 import { ExtractionProgress } from "@/screens/ExtractionProgress";
 import { InsufficientEvidence } from "@/screens/InsufficientEvidence";

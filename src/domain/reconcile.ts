@@ -1,12 +1,12 @@
-import type { FieldDefinition } from "./fields.js";
-import { normalizeValue } from "./normalize.js";
+import type { FieldDefinition } from "./fields";
+import { normalizeValue } from "./normalize";
 import type {
   Candidate,
   ConflictCandidate,
   DossierField,
   Evidence,
   RejectedCandidate,
-} from "./types.js";
+} from "./types";
 
 export type VerifiedCandidate = Candidate & { citation: Evidence };
 

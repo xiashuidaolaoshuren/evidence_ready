@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeValue } from "./normalize.js";
+import { normalizeValue } from "./normalize";
 
 describe("normalizeValue electrical scalar", () => {
   it("canonicalizes spaced voltage to '<n> V'", () => {

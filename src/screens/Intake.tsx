@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { ExtractionMode } from "@/domain/types.js";
-import { validateUploadFiles, MAX_UPLOAD_COUNT } from "./intake-upload.js";
+import type { ExtractionMode } from "@/domain/types";
+import { validateUploadFiles, MAX_UPLOAD_COUNT } from "./intake-upload";
 
 export interface IntakeProps {
   onStartBundled: (mode: ExtractionMode) => void;

@@ -2,9 +2,9 @@
 import userEvent from "@testing-library/user-event";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KETTLE_FIELDS } from "@/domain/fields.js";
-import type { DossierField } from "@/domain/types.js";
-import { ReadinessReport } from "./ReadinessReport.js";
+import { KETTLE_FIELDS } from "@/domain/fields";
+import type { DossierField } from "@/domain/types";
+import { ReadinessReport } from "./ReadinessReport";
 
 function field(
   key: string,

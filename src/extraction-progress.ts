@@ -1,4 +1,4 @@
-import type { ExtractionStageId, ProgressEvent } from "./api.js";
+import type { ExtractionStageId, ProgressEvent } from "./api";
 
 export const EXTRACTION_STAGE_ORDER: ExtractionStageId[] = [
   "read-docs",

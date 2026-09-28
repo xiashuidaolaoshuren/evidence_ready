@@ -1,4 +1,4 @@
-import type { ValueKind } from "./types.js";
+import type { ValueKind } from "./types";
 
 function formatNumber(n: number): string {
   if (Number.isInteger(n)) return n.toString();

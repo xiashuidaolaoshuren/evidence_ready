@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { KETTLE_FIELDS } from "./fields.js";
-import { applyEvent, parseAnswer } from "./apply.js";
-import { authoringReadiness } from "./readiness.js";
-import type { DossierField, Evidence, Proposal } from "./types.js";
+import { KETTLE_FIELDS } from "./fields";
+import { applyEvent, parseAnswer } from "./apply";
+import { authoringReadiness } from "./readiness";
+import type { DossierField, Evidence, Proposal } from "./types";
 
 function dossierField(
   key: string,
