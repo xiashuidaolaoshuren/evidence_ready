@@ -6,6 +6,7 @@ import {
   interpretAnswer,
   ModelError,
   OPENROUTER_MODEL,
+  prepareModelLogEvent,
   sanitizeLogOutput,
 } from "./model.js";
 
@@ -89,6 +90,7 @@ describe("createDefaultTransport", () => {
   });
 
   it("logs request and response with durationMs and content preview", async () => {
+    vi.stubEnv("EVIDENCEREADY_LOG_MODEL_CONTENT", "1");
     const content = JSON.stringify({ candidates: [] });
     const fetchMock = vi.fn(async () => {
       return new Response(
@@ -125,6 +127,7 @@ describe("createDefaultTransport", () => {
       messageKeys: expect.arrayContaining(["reasoning"]),
     });
     expect(typeof log.mock.calls[1]?.[0]?.durationMs).toBe("number");
+    vi.unstubAllEnvs();
   });
 
   it("never logs api keys or authorization headers", async () => {
@@ -215,6 +218,7 @@ describe("extractCandidates", () => {
   });
 
   it("logs schema-fail issues when Zod rejects a parsed payload", async () => {
+    vi.stubEnv("EVIDENCEREADY_LOG_MODEL_CONTENT", "1");
     const invalidPayload = JSON.stringify({ candidates: "nope" });
     const transport = transportReturning(invalidPayload);
     const log = vi.fn();
@@ -243,6 +247,7 @@ describe("extractCandidates", () => {
         contentPreview: invalidPayload,
       }),
     );
+    vi.unstubAllEnvs();
   });
 
   it("requires OPENROUTER_API_KEY for live calls", async () => {
@@ -363,18 +368,22 @@ describe("ModelError", () => {
 
 describe("defaultModelLog", () => {
   it("redacts bearer tokens from serialized output", () => {
+    vi.stubEnv("EVIDENCEREADY_LOG_MODEL_CONTENT", "1");
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
-    defaultModelLog({
-      phase: "parse-fail",
-      attempt: "first",
-      contentPreview: "Authorization: Bearer sk-or-v1-abc123",
-    });
+    defaultModelLog(
+      prepareModelLogEvent({
+        phase: "parse-fail",
+        attempt: "first",
+        contentPreview: "Authorization: Bearer sk-or-v1-abc123",
+      }),
+    );
 
     const line = String(info.mock.calls[0]?.[1]);
     expect(line).not.toContain("sk-or-v1-abc123");
     expect(line).toContain("[REDACTED");
 
     info.mockRestore();
+    vi.unstubAllEnvs();
   });
 
   it("redacts api keys from arbitrary serialized strings", () => {

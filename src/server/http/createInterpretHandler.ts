@@ -12,6 +12,10 @@ import { withContentLengthLimit } from "./content-length";
 import { jsonError } from "./json-error";
 import { mapModelError } from "./map-model-error";
 import { DEFAULT_MAX_REQUEST_BYTES, type HttpDeps } from "./types";
+import {
+  isPublicDemo,
+  liveInterpretUnavailableResponse,
+} from "./public-demo";
 import { withErrorEnvelope } from "./withErrorEnvelope";
 
 const interpretRequestSchema = z.object({
@@ -28,6 +32,10 @@ export function createInterpretHandler(deps: HttpDeps) {
   const interpret = deps.interpretAnswerFn ?? defaultInterpretAnswer;
 
   const handler = async (request: Request) => {
+    if (isPublicDemo(deps)) {
+      return liveInterpretUnavailableResponse();
+    }
+
     try {
       let raw: unknown;
       try {

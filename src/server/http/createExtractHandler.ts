@@ -7,6 +7,10 @@ import { jsonError } from "./json-error";
 import { mapExtractionStreamError } from "./map-stream-error";
 import { extractionSseResponse } from "./sse";
 import { DEFAULT_MAX_REQUEST_BYTES, type HttpDeps } from "./types";
+import {
+  isPublicDemo,
+  liveExtractUnavailableResponse,
+} from "./public-demo";
 import { withErrorEnvelope } from "./withErrorEnvelope";
 
 const fixtureExtractSchema = z.object({
@@ -19,6 +23,11 @@ export function createExtractHandler(deps: HttpDeps) {
 
   const handler = async (request: Request) => {
     const contentType = request.headers.get("content-type") ?? "";
+    const publicDemo = isPublicDemo(deps);
+
+    if (publicDemo && contentType.includes("multipart/form-data")) {
+      return liveExtractUnavailableResponse();
+    }
 
     if (!contentType.includes("application/json")) {
       return jsonError("invalid-intake", "Expected JSON or multipart upload.");
@@ -42,10 +51,15 @@ export function createExtractHandler(deps: HttpDeps) {
           {
             mode: "recorded",
             fixtureDir: deps.fixtureDir,
+            signal: request.signal,
           },
           run,
           mapExtractionStreamError,
         );
+      }
+
+      if (publicDemo) {
+        return liveExtractUnavailableResponse();
       }
 
       return jsonError("invalid-intake", "Expected JSON or multipart upload.");

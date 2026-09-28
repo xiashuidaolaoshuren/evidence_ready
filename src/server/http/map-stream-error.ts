@@ -3,6 +3,8 @@ import "server-only";
 import { z } from "zod";
 import {
   AllSourcesFailedError,
+  ExtractionTimeoutError,
+  TextTooLargeError,
   type RunExtractionResult,
 } from "../../../server/pipeline.js";
 import { ModelError } from "../../../server/model.js";
@@ -25,6 +27,18 @@ export function mapExtractionStreamError(error: unknown): {
       code: error.code,
       message: error.message,
       envVar: error.envVar,
+    };
+  }
+  if (error instanceof ExtractionTimeoutError) {
+    return {
+      code: "extraction-timeout",
+      message: error.message,
+    };
+  }
+  if (error instanceof TextTooLargeError) {
+    return {
+      code: "text-too-large",
+      message: error.message,
     };
   }
   if (error instanceof AllSourcesFailedError) {
