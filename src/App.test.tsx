@@ -137,7 +137,7 @@ describe("App extraction lifecycle", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/session could not be saved to this browser/i),
+        screen.getByText(session.SESSION_PERSISTENCE_WARNING),
       ).toBeInTheDocument();
     });
   });

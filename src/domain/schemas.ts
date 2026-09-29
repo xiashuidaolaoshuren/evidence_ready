@@ -52,7 +52,9 @@ const rejectedCandidateSchema = z.object({
 const conflictCandidateSchema = z.object({
   value: z.unknown(),
   normalizedValue: z.unknown(),
-  citation: citationSchema.optional(),
+  citation: citationSchema
+    .extend({ surroundingWindow: z.string().optional() })
+    .optional(),
   source: z.enum(["document", "user"]),
 });
 

@@ -13,7 +13,11 @@ import { InsufficientEvidence } from "@/screens/InsufficientEvidence";
 import { InterviewWorkspace } from "@/screens/InterviewWorkspace";
 import { Intake } from "@/screens/Intake";
 import { ReadinessReport } from "@/screens/ReadinessReport";
-import { clearSession, saveSession } from "@/session";
+import {
+  clearSession,
+  saveSession,
+  SESSION_PERSISTENCE_WARNING,
+} from "@/session";
 
 interface LastExtractRequest {
   mode: ExtractionMode;
@@ -47,9 +51,12 @@ export default function App() {
     }
 
     const result = saveSession({
+      phase: state.phase,
       dossier: state.dossier,
       rejected: state.rejected,
       mode: state.mode,
+      counts: state.counts,
+      failedSources: state.failedSources,
       interview: state.interview,
       excerpts: state.dossier.flatMap((field) => field.evidence),
     });
@@ -177,8 +184,7 @@ export default function App() {
           className="page-wrap py-[10px] text-[13px] text-[var(--st-unverified)]"
           role="status"
         >
-          Session could not be saved to this browser&apos;s storage. Your
-          progress survives refresh only while this tab stays open.
+          {SESSION_PERSISTENCE_WARNING}
         </div>
       ) : null}
 
