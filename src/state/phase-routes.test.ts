@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appReducer, initialAppState } from "@/app-state";
+import { appReducer, initialAppState } from "@/state/app-state";
 import type { DossierField } from "@/domain/types";
 import { historyMove, routeForPhase } from "./phase-routes";
 

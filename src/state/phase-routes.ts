@@ -1,4 +1,4 @@
-import type { AppAction, AppPhase } from "@/app-state";
+import type { AppAction, AppPhase } from "@/state/app-state";
 
 export type HistoryMove =
   | { kind: "stay" }

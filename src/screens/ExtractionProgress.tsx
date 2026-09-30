@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import type { ExtractionCounts, FailedSource } from "@/app-state";
+import type { ExtractionCounts, FailedSource } from "@/state/app-state";
 import { essentialKeys } from "@/domain/fields";
 import type { DossierField, ExtractionMode } from "@/domain/types";
 import { errorRecoveryAction } from "./extraction-errors";

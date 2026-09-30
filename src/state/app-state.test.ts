@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { appReducer, initialAppState } from "./app-state";
-import type { DossierField } from "./domain/types";
+import { appReducer, initialAppState } from "@/state/app-state";
+import type { DossierField } from "@/domain/types";
 
 function emptyField(key: string): DossierField {
   return {

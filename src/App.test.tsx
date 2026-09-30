@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import * as api from "./api";
-import * as session from "./session";
+import * as session from "@/state/session";
 
 vi.mock("./api.js", () => ({
   ApiError: class ApiError extends Error {
@@ -20,7 +20,7 @@ vi.mock("./api.js", () => ({
   extractUpload: vi.fn(),
 }));
 
-vi.mock("./session.js", async (importOriginal) => {
+vi.mock("@/state/session.js", async (importOriginal) => {
   const actual = await importOriginal<typeof session>();
   return {
     ...actual,
@@ -63,20 +63,27 @@ describe("App extraction lifecycle", () => {
 
   it("starts at intake even when a stored interview session exists", () => {
     vi.mocked(session.loadSession).mockReturnValue({
-      dossier: mockExtractResponse.dossier,
-      rejected: [],
-      mode: "recorded",
-      interview: {
+      session: {
+        version: 2,
+        updatedAt: new Date().toISOString(),
         phase: "interview",
-        currentQuestionFieldKey: "product-name",
-        askedFieldKeys: ["product-name"],
-        answeredFieldKeys: [],
-        declaredUnavailableFieldKeys: [],
-        questionCount: 1,
-        continuePastBudget: false,
-        completionReason: null,
+        dossier: mockExtractResponse.dossier,
+        rejected: [],
+        mode: "recorded",
+        counts: mockExtractResponse.counts,
+        interview: {
+          phase: "interview",
+          currentQuestionFieldKey: "product-name",
+          askedFieldKeys: ["product-name"],
+          answeredFieldKeys: [],
+          declaredUnavailableFieldKeys: [],
+          questionCount: 1,
+          continuePastBudget: false,
+          completionReason: null,
+        },
+        excerpts: [],
       },
-      excerpts: [],
+      notice: null,
     });
 
     render(<App />);

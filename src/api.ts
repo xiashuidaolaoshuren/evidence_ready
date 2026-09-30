@@ -128,9 +128,10 @@ function parseSseChunk(buffer: string): {
 export async function postExtractStream(
   init: RequestInit,
   onEvent: (event: ProgressEvent) => void,
+  signal?: AbortSignal,
 ): Promise<ExtractResponse> {
   try {
-    const response = await fetch("/api/extract", init);
+    const response = await fetch("/api/extract", { ...init, signal });
 
     if (!response.ok) {
       throw await parseApiError(response);
@@ -202,13 +203,15 @@ export async function postExtractStream(
 async function postExtract(
   init: RequestInit,
   onEvent?: (event: ProgressEvent) => void,
+  signal?: AbortSignal,
 ): Promise<ExtractResponse> {
-  return postExtractStream(init, onEvent ?? (() => {}));
+  return postExtractStream(init, onEvent ?? (() => {}), signal);
 }
 
 export async function extractFixture(
   mode: ExtractionMode,
   onEvent?: (event: ProgressEvent) => void,
+  signal?: AbortSignal,
 ): Promise<ExtractResponse> {
   return postExtract(
     {
@@ -217,12 +220,14 @@ export async function extractFixture(
       body: JSON.stringify({ source: "fixture", mode }),
     },
     onEvent,
+    signal,
   );
 }
 
 export async function extractUpload(
   files: File[],
   onEvent?: (event: ProgressEvent) => void,
+  signal?: AbortSignal,
 ): Promise<ExtractResponse> {
   const form = new FormData();
   for (const file of files) {
@@ -234,6 +239,7 @@ export async function extractUpload(
       body: form,
     },
     onEvent,
+    signal,
   );
 }
 
@@ -245,12 +251,14 @@ export async function interpretAnswer(
   fieldKey: string,
   answerText: string,
   dossier: DossierField[],
+  signal?: AbortSignal,
 ): Promise<InterpretResponse> {
   try {
     const response = await fetch("/api/interpret", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fieldKey, answerText, dossier }),
+      signal,
     });
 
     if (!response.ok) {

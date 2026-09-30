@@ -1,11 +1,27 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Intake } from "@/screens/Intake";
+import { useSession } from "@/state/SessionProvider";
 
-export default function HomePage() {
+export default function IntakePage() {
+  const {
+    state,
+    publicDemo,
+    sessionNotice,
+    handleStartBundled,
+    handleStartUpload,
+  } = useSession();
+
+  if (state.phase !== "intake") {
+    return null;
+  }
+
   return (
-    <main className="screen-pad">
-      <Button type="button">Continue</Button>
-    </main>
+    <Intake
+      publicDemo={publicDemo}
+      sessionNotice={sessionNotice}
+      onStartBundled={handleStartBundled}
+      onStartUpload={handleStartUpload}
+    />
   );
 }

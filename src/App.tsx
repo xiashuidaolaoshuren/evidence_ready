@@ -4,7 +4,7 @@ import { ModeBadge } from "@/components/ModeBadge";
 import {
   appReducer,
   initialAppState,
-} from "@/app-state";
+} from "@/state/app-state";
 import { ApiError, extractFixture, extractUpload, type ProgressEvent } from "@/api";
 import type { ExtractionMode } from "@/domain/types";
 import { progressFromEvent } from "@/extraction-progress";
@@ -17,7 +17,7 @@ import {
   clearSession,
   saveSession,
   SESSION_PERSISTENCE_WARNING,
-} from "@/session";
+} from "@/state/session";
 
 interface LastExtractRequest {
   mode: ExtractionMode;

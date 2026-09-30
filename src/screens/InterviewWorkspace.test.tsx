@@ -114,6 +114,7 @@ describe("InterviewWorkspace interpretation", () => {
         "importer-contact",
         "Acme Imports GmbH — rated power should be 2200 W",
         dossier,
+        expect.any(AbortSignal),
       );
     });
 
@@ -123,5 +124,150 @@ describe("InterviewWorkspace interpretation", () => {
       }),
     ).toBeInTheDocument();
     expect(onAnswer).not.toHaveBeenCalled();
+  });
+
+  it("aborts interpretation when the workspace unmounts", async () => {
+    let capturedSignal: AbortSignal | undefined;
+    vi.mocked(interpretAnswer).mockImplementation(
+      (_fieldKey, _answerText, _dossier, signal) => {
+        capturedSignal = signal;
+        return new Promise(() => {});
+      },
+    );
+
+    const { unmount } = render(
+      <InterviewWorkspace
+        dossier={[
+          dossierField("capacity", "confirmed"),
+          dossierField("importer-contact", "missing", {
+            label: "Importer or responsible-party contact",
+            valueKind: "prose",
+          }),
+        ]}
+        interview={interviewBase}
+        onAnswer={vi.fn()}
+        onLeaveUnresolved={vi.fn()}
+        onContinuePastBudget={vi.fn()}
+        onContinueSupporting={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    const user = userEvent.setup();
+    await user.type(
+      screen.getByRole("textbox", { name: /your answer/i }),
+      "Acme Imports GmbH — rated power should be 2200 W",
+    );
+    await user.click(screen.getByRole("button", { name: /submit answer/i }));
+
+    await waitFor(() => {
+      expect(capturedSignal).toBeDefined();
+    });
+
+    unmount();
+    expect(capturedSignal?.aborted).toBe(true);
+  });
+});
+
+describe("InterviewWorkspace public demo", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  it("shows one-field guidance and skips interpret for multi-field answers", async () => {
+    const user = userEvent.setup();
+    const onAnswer = vi.fn();
+
+    render(
+      <InterviewWorkspace
+        publicDemo
+        dossier={[
+          dossierField("capacity", "confirmed"),
+          dossierField("importer-contact", "missing", {
+            label: "Importer or responsible-party contact",
+            valueKind: "prose",
+          }),
+        ]}
+        interview={interviewBase}
+        onAnswer={onAnswer}
+        onLeaveUnresolved={vi.fn()}
+        onContinuePastBudget={vi.fn()}
+        onContinueSupporting={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    await user.type(
+      screen.getByRole("textbox", { name: /your answer/i }),
+      "Acme Imports GmbH — rated power should be 2200 W",
+    );
+    await user.click(screen.getByRole("button", { name: /submit answer/i }));
+
+    expect(interpretAnswer).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/this demo takes one field at a time/i),
+    ).toBeInTheDocument();
+    expect(onAnswer).not.toHaveBeenCalled();
+  });
+
+  it("applies a direct answer in public demo", async () => {
+    const user = userEvent.setup();
+    const onAnswer = vi.fn();
+
+    render(
+      <InterviewWorkspace
+        publicDemo
+        dossier={[
+          dossierField("capacity", "confirmed"),
+          dossierField("importer-contact", "missing", {
+            label: "Importer or responsible-party contact",
+            valueKind: "prose",
+          }),
+        ]}
+        interview={interviewBase}
+        onAnswer={onAnswer}
+        onLeaveUnresolved={vi.fn()}
+        onContinuePastBudget={vi.fn()}
+        onContinueSupporting={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    await user.type(
+      screen.getByRole("textbox", { name: /your answer/i }),
+      "Acme Imports GmbH",
+    );
+    await user.click(screen.getByRole("button", { name: /submit answer/i }));
+
+    expect(interpretAnswer).not.toHaveBeenCalled();
+    expect(onAnswer).toHaveBeenCalledWith({
+      type: "provide-answer",
+      fieldKey: "importer-contact",
+      value: "Acme Imports GmbH",
+    });
+  });
+
+  it("shows the refresh note about drafts and unaccepted proposals", () => {
+    render(
+      <InterviewWorkspace
+        dossier={[dossierField("capacity", "conflicting")]}
+        interview={interviewBase}
+        onAnswer={vi.fn()}
+        onLeaveUnresolved={vi.fn()}
+        onContinuePastBudget={vi.fn()}
+        onContinueSupporting={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        /refresh keeps applied dossier changes and interview progress/i,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/does not keep an unfinished answer or an unaccepted proposal/i),
+    ).toBeInTheDocument();
   });
 });

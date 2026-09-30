@@ -5,9 +5,9 @@ import {
   clearSession,
   SESSION_PERSISTENCE_WARNING,
   SESSION_STORAGE_KEY,
-} from "./session";
-import { KETTLE_FIELDS } from "./domain/fields";
-import type { DossierField, InterviewState } from "./domain/types";
+} from "@/state/session";
+import { KETTLE_FIELDS } from "@/domain/fields";
+import type { DossierField, InterviewState } from "@/domain/types";
 
 const store = new Map<string, string>();
 

@@ -228,4 +228,20 @@ describe("Intake", () => {
     expect(screen.getByText("three.pdf")).toBeInTheDocument();
     expect(screen.queryByText("four.pdf")).not.toBeInTheDocument();
   });
+
+  it("hides live extraction and upload in public demo", () => {
+    render(
+      <Intake publicDemo onStartBundled={vi.fn()} onStartUpload={vi.fn()} />,
+    );
+
+    expect(
+      screen.queryByRole("radio", { name: /live extraction/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /upload your own documents/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/not part of this demo/i),
+    ).toBeInTheDocument();
+  });
 });

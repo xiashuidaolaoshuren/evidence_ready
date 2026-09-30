@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import type { FailedSource } from "@/app-state";
+import type { FailedSource } from "@/state/app-state";
 import {
   ESSENTIAL_COVERAGE_THRESHOLD,
 } from "@/domain/coverage";

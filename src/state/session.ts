@@ -1,15 +1,15 @@
 import { z } from "zod";
-import type { AppPhase, ExtractionCounts, FailedSource } from "./app-state";
-import { KETTLE_FIELDS } from "./domain/fields";
-import { dossierSchema } from "./domain/schemas";
-import { EXTRACTION_MODES } from "./domain/types";
+import type { AppPhase, ExtractionCounts, FailedSource } from "@/state/app-state";
+import { KETTLE_FIELDS } from "@/domain/fields";
+import { dossierSchema } from "@/domain/schemas";
+import { EXTRACTION_MODES } from "@/domain/types";
 import type {
   DossierField,
   ExtractionMode,
   InterviewState,
   RejectedCandidate,
   Evidence,
-} from "./domain/types";
+} from "@/domain/types";
 
 export const SESSION_STORAGE_KEY = "evidenceready.session";
 export const SESSION_VERSION = 2 as const;

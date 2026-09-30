@@ -1,12 +1,12 @@
-import { applyEvent, type ApplyEvent } from "./domain/apply";
-import { nextQuestion, SOFT_CAP } from "./domain/planner";
+import { applyEvent, type ApplyEvent } from "@/domain/apply";
+import { nextQuestion, SOFT_CAP } from "@/domain/planner";
 import type {
   DossierField,
   ExtractionMode,
   InterviewPhase,
   InterviewState,
   RejectedCandidate,
-} from "./domain/types";
+} from "@/domain/types";
 
 export type AppPhase = InterviewPhase | "extracted";
 
