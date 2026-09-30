@@ -1,5 +1,5 @@
-import type { interpretAnswer, ModelTransport } from "../../../server/model.js";
-import type { runExtraction } from "../../../server/pipeline.js";
+import type { interpretAnswer, ModelTransport } from "../../../server/model";
+import type { runExtraction } from "../../../server/pipeline";
 import { MAX_TOTAL_UPLOAD_BYTES } from "@/domain/upload-limits";
 
 export const DEFAULT_MAX_REQUEST_BYTES = MAX_TOTAL_UPLOAD_BYTES + 64 * 1024;

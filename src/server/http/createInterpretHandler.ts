@@ -7,7 +7,7 @@ import type { DossierField } from "@/domain/types";
 import {
   interpretAnswer as defaultInterpretAnswer,
   ModelError,
-} from "../../../server/model.js";
+} from "../../../server/model";
 import { withContentLengthLimit } from "./content-length";
 import { jsonError } from "./json-error";
 import { mapModelError } from "./map-model-error";

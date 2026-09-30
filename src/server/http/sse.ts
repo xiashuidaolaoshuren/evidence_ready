@@ -4,7 +4,7 @@ import {
   runExtraction,
   type RunExtractionInput,
   type RunExtractionResult,
-} from "../../../server/pipeline.js";
+} from "../../../server/pipeline";
 
 function sseEncode(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;

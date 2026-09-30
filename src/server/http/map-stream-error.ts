@@ -6,9 +6,9 @@ import {
   ExtractionTimeoutError,
   TextTooLargeError,
   type RunExtractionResult,
-} from "../../../server/pipeline.js";
-import { ModelError } from "../../../server/model.js";
-import { PdfExtractError } from "../../../server/pdf.js";
+} from "../../../server/pipeline";
+import { ModelError } from "../../../server/model";
+import { PdfExtractError } from "../../../server/pdf";
 
 export function mapExtractionStreamError(error: unknown): {
   code: string;

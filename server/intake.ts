@@ -3,10 +3,10 @@ import {
   MAX_TOTAL_UPLOAD_BYTES,
   MAX_UPLOAD_COUNT,
   type UploadBudgetError,
-} from "../src/domain/upload-limits.js";
-import type { PipelineUpload } from "./pipeline.js";
+} from "@/domain/upload-limits";
+import type { PipelineUpload } from "./pipeline";
 
-export { MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "../src/domain/upload-limits.js";
+export { MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "@/domain/upload-limits";
 
 export interface IntakeValidationError {
   code: "invalid-intake";

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
-import { runExtraction } from "../../../server/pipeline.js";
+import { runExtraction } from "../../../server/pipeline";
 import { withContentLengthLimit } from "./content-length";
 import { jsonError } from "./json-error";
 import { mapExtractionStreamError } from "./map-stream-error";

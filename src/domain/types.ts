@@ -36,6 +36,7 @@ export interface Citation {
   documentId: string;
   page: number;
   quote: string;
+  surroundingWindow?: string;
 }
 
 export interface Evidence extends Citation {

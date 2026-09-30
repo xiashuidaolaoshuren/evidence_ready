@@ -3,7 +3,7 @@ import {
   proposalSchema,
   type ExtractionResponse,
   type ProposalResponse,
-} from "../src/domain/schemas.js";
+} from "@/domain/schemas";
 import { ZodError } from "zod";
 
 export const OPENROUTER_MODEL = "deepseek/deepseek-v4-flash-vision-exp";
@@ -46,11 +46,11 @@ const CONTENT_PREVIEW_LIMIT = 500;
 function stripContentPreview(event: ModelLogEvent): ModelLogEvent {
   if (event.phase === "response") {
     const { contentPreview: _contentPreview, ...rest } = event;
-    return rest;
+    return rest as ModelLogEvent;
   }
   if (event.phase === "parse-fail" || event.phase === "schema-fail") {
     const { contentPreview: _contentPreview, ...rest } = event;
-    return rest;
+    return rest as ModelLogEvent;
   }
   return event;
 }

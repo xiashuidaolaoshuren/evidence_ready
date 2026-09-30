@@ -43,15 +43,23 @@ test("recorded kettle: intake through conflict, gap, power, and report", async (
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.goto("/");
+  await expect(page).toHaveURL("/");
 
-  await expect(
-    page.getByRole("radio", { name: /recorded extraction/i }),
-  ).toBeChecked();
   await page.getByRole("button", { name: /load the bundled example/i }).click();
 
   await page
     .getByRole("button", { name: /open the interview/i })
     .click({ timeout: 30_000 });
+  await expect(page).toHaveURL("/interview");
+  await expect(
+    page.getByRole("heading", { name: /which capacity is correct for the ark-1500/i }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(page).toHaveURL("/interview");
+  await expect(
+    page.getByRole("heading", { name: /which capacity is correct for the ark-1500/i }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /use 1\.5 l/i })).toBeVisible();
 
   await page.getByRole("button", { name: /use 1\.5 l/i }).click();
 
@@ -62,6 +70,7 @@ test("recorded kettle: intake through conflict, gap, power, and report", async (
     .getByRole("button", { name: /confirm 2200 w as user-provided/i })
     .click();
 
+  await expect(page).toHaveURL("/report");
   await expect(page.getByText(/readiness report · ark-1500 kettle/i)).toBeVisible({
     timeout: 20_000,
   });

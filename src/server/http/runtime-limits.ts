@@ -1,6 +1,6 @@
 import "server-only";
 
-import { EXTRACTION_DEADLINE_MS } from "../../../server/pipeline.js";
+import { EXTRACTION_DEADLINE_MS } from "../../../server/pipeline";
 
 export const DEFAULT_MAX_DURATION_SECONDS = 120;
 const DEADLINE_BUFFER_SECONDS = 10;

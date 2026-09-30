@@ -79,7 +79,7 @@ describe("historyMove dispatch", () => {
           status: "user-provided" as const,
           originalValue: "1.7 L",
           normalizedValue: "1.7 L",
-          markers: ["user-provided"],
+          markers: [],
         },
       ],
       interview: {

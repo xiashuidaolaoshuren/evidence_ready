@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ModelError } from "../../../server/model.js";
+import { ModelError } from "../../../server/model";
 import { jsonError } from "./json-error";
 
 export function mapModelError(error: ModelError): Response {

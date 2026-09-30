@@ -1,22 +1,22 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { assessCoverage } from "../src/domain/coverage.js";
-import { KETTLE_FIELDS } from "../src/domain/fields.js";
-import { extractionPrompt } from "../src/domain/prompt.js";
+import { assessCoverage } from "@/domain/coverage";
+import { KETTLE_FIELDS } from "@/domain/fields";
+import { extractionPrompt } from "@/domain/prompt";
 import {
   reconcileCandidates,
   type VerifiedCandidate,
-} from "../src/domain/reconcile.js";
-import { extractionResponseSchema } from "../src/domain/schemas.js";
+} from "@/domain/reconcile";
+import { extractionResponseSchema } from "@/domain/schemas";
 import type {
   Candidate,
   DossierField,
   ExtractionMode,
   RejectedCandidate,
-} from "../src/domain/types.js";
-import { verifyCitation } from "../src/domain/verify.js";
-import { fetchExtractionPayload, ModelError, type ModelTransport } from "./model.js";
-import { extractPages, PdfExtractError } from "./pdf.js";
+} from "@/domain/types";
+import { verifyCitation } from "@/domain/verify";
+import { fetchExtractionPayload, ModelError, type ModelTransport } from "./model";
+import { extractPages, PdfExtractError } from "./pdf";
 import { ZodError } from "zod";
 
 interface PageCorpusDocument {

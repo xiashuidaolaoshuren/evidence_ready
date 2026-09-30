@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
+import type { RunExtractionInput } from "../../../server/pipeline";
 import { readSseEvents } from "./test-helpers";
 import { createExtractHandler } from "./createExtractHandler";
 
@@ -12,7 +13,7 @@ const fixtureDir = join(
 describe("createExtractHandler abort", () => {
   it("passes request.signal into runExtraction and stops on abort", async () => {
     let capturedSignal: AbortSignal | undefined;
-    const runExtractionFn = vi.fn(async (input: { signal?: AbortSignal }) => {
+    const runExtractionFn = vi.fn(async (input: RunExtractionInput) => {
       capturedSignal = input.signal;
       await new Promise<never>((_, reject) => {
         input.signal?.addEventListener(
@@ -21,6 +22,7 @@ describe("createExtractHandler abort", () => {
           { once: true },
         );
       });
+      throw new Error("runExtraction should abort before returning");
     });
     const handler = createExtractHandler({ fixtureDir, runExtractionFn });
     const controller = new AbortController();
