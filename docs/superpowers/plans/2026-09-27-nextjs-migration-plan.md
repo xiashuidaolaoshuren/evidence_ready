@@ -72,7 +72,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T1 — Adjudication keeps evidence status
 
-- [ ] **Do:** A documented conflict winner stays confirmed. A user-supplied winner, including a custom typed value, stays user-provided. Both keep the adjudicated marker and the losing candidates. Empty adjudication remains a no-op.
+- [x] **Do:** A documented conflict winner stays confirmed. A user-supplied winner, including a custom typed value, stays user-provided. Both keep the adjudicated marker and the losing candidates. Empty adjudication remains a no-op.
 - **Blocked by:** —
 - **Plan mode:** high
 - **TDD suitable:** yes
@@ -81,7 +81,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T2 — Report conflict wording
 
-- [ ] **Do:** The readiness criterion fails only for essential conflicts. Supporting conflicts render in their own section and say they do not block readiness. An adjudicated user-provided value shows that status, the marker, and retained losers.
+- [x] **Do:** The readiness criterion fails only for essential conflicts. Supporting conflicts render in their own section and say they do not block readiness. An adjudicated user-provided value shows that status, the marker, and retained losers.
 - **Blocked by:** T1
 - **Plan mode:** medium
 - **TDD suitable:** partial
@@ -90,7 +90,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T3 — Shared upload budget
 
-- [ ] **Do:** One module defines 3 files and 4 MiB total. Browser and server reject a sum over the cap, accept one file at the cap, and no longer allow 10 MiB per file. Intake copy says 4 MB total.
+- [x] **Do:** One module defines 3 files and 4 MiB total. Browser and server reject a sum over the cap, accept one file at the cap, and no longer allow 10 MiB per file. Intake copy says 4 MB total.
 - **Blocked by:** —
 - **Plan mode:** skip
 - **TDD suitable:** yes
@@ -99,7 +99,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T4 — Next.js scaffold and import trial
 
-- [ ] **Do:** Add the App Router shell, Tailwind, one existing button, `dev` / `build` / `start`, and a throwaway page that imports a domain module ending in `.js`. If that import fails, strip relative `.js` suffixes across `src/` before any later move. Remove the throwaway page.
+- [x] **Do:** Add the App Router shell, Tailwind, one existing button, `dev` / `build` / `start`, and a throwaway page that imports a domain module ending in `.js`. If that import fails, strip relative `.js` suffixes across `src/` before any later move. Remove the throwaway page.
 - **Blocked by:** —
 - **Plan mode:** medium
 - **TDD suitable:** no
@@ -108,7 +108,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T5 — Route-handler port
 
-- [ ] **Do:** Move HTTP behaviour into factory-built route handlers. Cover the current `server/http.test.ts` cases, `Content-Length` 413, an unexpected throw as `internal-error` with no stack or path, and a fixture `SyntaxError` that stays a server fault. JSON errors apply before the stream starts. After it starts, failures are SSE `error` events. A non-JSON platform failure becomes the client's unexpected-server-error message.
+- [x] **Do:** Move HTTP behaviour into factory-built route handlers. Cover the current `server/http.test.ts` cases, `Content-Length` 413, an unexpected throw as `internal-error` with no stack or path, and a fixture `SyntaxError` that stays a server fault. JSON errors apply before the stream starts. After it starts, failures are SSE `error` events. A non-JSON platform failure becomes the client's unexpected-server-error message.
 - **Blocked by:** T3, T4
 - **Plan mode:** high
 - **TDD suitable:** yes
@@ -117,7 +117,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T6 — Demo gate, deadline, text budget, cancellation, logs
 
-- [ ] **Do:** Public demo returns 403 `live-unavailable` for live extract, uploads, and interpret. Extraction aborts at 110 seconds with `extraction-timeout`, including a repair call. Extracted text over `MAX_EXTRACTED_TEXT_CHARS` returns `text-too-large` and does not call the transport. `request.signal` abort stops the pipeline. Deployed logs omit content even when `EVIDENCEREADY_LOG_MODEL_CONTENT=1`; the flag works only off Vercel. `maxDuration` is 120, lowered only if the plan cap requires it, always at least 10 seconds above the deadline.
+- [x] **Do:** Public demo returns 403 `live-unavailable` for live extract, uploads, and interpret. Extraction aborts at 110 seconds with `extraction-timeout`, including a repair call. Extracted text over `MAX_EXTRACTED_TEXT_CHARS` returns `text-too-large` and does not call the transport. `request.signal` abort stops the pipeline. Deployed logs omit content even when `EVIDENCEREADY_LOG_MODEL_CONTENT=1`; the flag works only off Vercel. `maxDuration` is 120, lowered only if the plan cap requires it, always at least 10 seconds above the deadline.
 - **Blocked by:** T5
 - **Plan mode:** high
 - **TDD suitable:** yes
@@ -126,7 +126,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T7 — Session version 2
 
-- [ ] **Do:** Save version, `updatedAt`, phase, counts, failed sources, full interview flags, and citation `surroundingWindow`. Restore that session. Discard intake, extracting, another version, an inconsistent dossier, and a session older than seven days, with the spec's intake notices. Quota or unavailable storage warns: `Progress cannot be saved. Refreshing or closing this page will lose this session.`
+- [x] **Do:** Save version, `updatedAt`, phase, counts, failed sources, full interview flags, and citation `surroundingWindow`. Restore that session. Discard intake, extracting, another version, an inconsistent dossier, and a session older than seven days, with the spec's intake notices. Quota or unavailable storage warns: `Progress cannot be saved. Refreshing or closing this page will lose this session.`
 - **Blocked by:** T1
 - **Plan mode:** high
 - **TDD suitable:** yes
@@ -135,7 +135,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T8 — Phase routes
 
-- [ ] **Do:** Map phases to `/`, `/extract`, `/insufficient`, `/interview`, and `/report`. Replace a mismatched URL except the two allowed moves: report to interview dispatches `open-interview`; interview to report dispatches `finish` and keeps applied answers and an existing completion reason.
+- [x] **Do:** Map phases to `/`, `/extract`, `/insufficient`, `/interview`, and `/report`. Replace a mismatched URL except the two allowed moves: report to interview dispatches `open-interview`; interview to report dispatches `finish` and keeps applied answers and an existing completion reason.
 - **Blocked by:** —
 - **Plan mode:** medium
 - **TDD suitable:** yes
@@ -144,7 +144,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T9 — Session provider, pages, and public interview
 
-- [ ] **Do:** Gate restore before rendering pages. Push a route after a user phase change, without a second entry during restore. Abort extract and interpret on restart and page leave, and ignore late results. Public interview applies a direct answer and shows the one-field guidance instead of calling interpret. Drafts and unaccepted proposals are not in the saved session.
+- [x] **Do:** Gate restore before rendering pages. Push a route after a user phase change, without a second entry during restore. Abort extract and interpret on restart and page leave, and ignore late results. Public interview applies a direct answer and shows the one-field guidance instead of calling interpret. Drafts and unaccepted proposals are not in the saved session.
 - **Blocked by:** T4, T6, T7, T8
 - **Plan mode:** high
 - **TDD suitable:** partial
@@ -153,7 +153,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T10 — Cutover
 
-- [ ] **Do:** Delete the Vite and Hono entry points. Point Playwright at `http://localhost:3000` and one `npm run dev`. The smoke asserts intake, interview, and report URLs, then reloads on `/interview` and still shows the question. README documents both deployments, the All Deployments protection requirement, the verified duration cap, and the text-budget stand-in if the model card was unavailable.
+- [x] **Do:** Delete the Vite and Hono entry points. Point Playwright at `http://localhost:3000` and one `npm run dev`. The smoke asserts intake, interview, and report URLs, then reloads on `/interview` and still shows the question. README documents both deployments, the All Deployments protection requirement, the verified duration cap, and the text-budget stand-in if the model card was unavailable.
 - **Blocked by:** T2, T9
 - **Plan mode:** medium
 - **TDD suitable:** partial
