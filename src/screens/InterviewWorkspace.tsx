@@ -1,20 +1,27 @@
-import { useMemo, useState } from "react";
-import { ApiError, interpretAnswer } from "@/api.js";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ApiError, interpretAnswer } from "@/api";
 import { Button } from "@/components/ui/button";
-import type { ApplyEvent } from "@/domain/apply.js";
-import { needsInterpretation, parseAnswer } from "@/domain/apply.js";
-import { nextQuestion } from "@/domain/planner.js";
-import type { DossierField, Evidence, Proposal } from "@/domain/types.js";
-import type { InterviewState } from "@/domain/types.js";
-import { BudgetPause } from "./BudgetPause.js";
-import { DossierPanel } from "./DossierPanel.js";
-import { ProposalConfirmation } from "./ProposalConfirmation.js";
-import { QuestionPanel } from "./QuestionPanel.js";
-import { SourceDrawer } from "./SourceDrawer.js";
+import type { ApplyEvent } from "@/domain/apply";
+import { needsInterpretation, parseAnswer } from "@/domain/apply";
+import { nextQuestion } from "@/domain/planner";
+import type { DossierField, Evidence, Proposal } from "@/domain/types";
+import type { InterviewState } from "@/domain/types";
+import { BudgetPause } from "./BudgetPause";
+import { DossierPanel } from "./DossierPanel";
+import { ProposalConfirmation } from "./ProposalConfirmation";
+import { QuestionPanel } from "./QuestionPanel";
+import { SourceDrawer } from "./SourceDrawer";
+
+export const INTERVIEW_REFRESH_NOTE =
+  "Refresh keeps applied dossier changes and interview progress, and does not keep an unfinished answer or an unaccepted proposal.";
+
+export const PUBLIC_DEMO_ONE_FIELD_GUIDANCE =
+  "This demo takes one field at a time. Enter only this field's value — answer interpretation is not available here.";
 
 export interface InterviewWorkspaceProps {
   dossier: DossierField[];
   interview: InterviewState;
+  publicDemo?: boolean;
   onAnswer: (event: ApplyEvent) => void;
   onLeaveUnresolved: (fieldKey: string) => void;
   onContinuePastBudget: () => void;
@@ -64,6 +71,7 @@ function dossierCounts(dossier: DossierField[]): string {
 export function InterviewWorkspace({
   dossier,
   interview,
+  publicDemo = false,
   onAnswer,
   onLeaveUnresolved,
   onContinuePastBudget,
@@ -76,8 +84,17 @@ export function InterviewWorkspace({
     null,
   );
   const [interpretError, setInterpretError] = useState<string | null>(null);
+  const [demoGuidance, setDemoGuidance] = useState<string | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
   const [flashEpoch, setFlashEpoch] = useState(0);
+  const interpretAbort = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      interpretAbort.current?.abort();
+      interpretAbort.current = null;
+    };
+  }, []);
 
   const question = useMemo(
     () => nextQuestion(dossier, interview),
@@ -137,9 +154,14 @@ export function InterviewWorkspace({
     sourceDescription?: string,
   ) {
     setInterpretError(null);
+    setDemoGuidance(null);
     const parsed = parseAnswer(fieldKey, answerText);
     if (parsed.type !== "provide-answer") {
       handleAnswer(parsed);
+      return;
+    }
+    if (publicDemo && needsInterpretation(fieldKey, answerText)) {
+      setDemoGuidance(PUBLIC_DEMO_ONE_FIELD_GUIDANCE);
       return;
     }
     if (!needsInterpretation(fieldKey, answerText)) {
@@ -152,11 +174,16 @@ export function InterviewWorkspace({
       return;
     }
 
+    interpretAbort.current?.abort();
+    const controller = new AbortController();
+    interpretAbort.current = controller;
+
     try {
       const { proposals } = await interpretAnswer(
         fieldKey,
         answerText.trim(),
         dossier,
+        controller.signal,
       );
       if (proposals.length === 0) {
         setInterpretError("Could not interpret the answer. Please rephrase.");
@@ -181,6 +208,7 @@ export function InterviewWorkspace({
             <h2 className="text-[clamp(24px,2.6vw,32px)]">
               Resolve what the documents can&apos;t.
             </h2>
+            <p className="note mt-[8px]">{INTERVIEW_REFRESH_NOTE}</p>
           </div>
           <div className="row">
             <span className="meta">
@@ -206,7 +234,7 @@ export function InterviewWorkspace({
                 onLeaveUnresolved={onLeaveUnresolved}
                 onOpenSource={openEvidence}
                 onSubmitMissingAnswer={handleMissingSubmit}
-                interpretError={interpretError}
+                interpretError={interpretError ?? demoGuidance}
               />
             ) : showEssentialsClear ? (
               <div className="banner stack">

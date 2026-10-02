@@ -1,6 +1,6 @@
-import { KETTLE_FIELDS } from "./fields.js";
-import { normalizeValue } from "./normalize.js";
-import type { ConflictCandidate, DossierField, Evidence, Proposal, ResolutionEvent } from "./types.js";
+import { KETTLE_FIELDS } from "./fields";
+import { normalizeValue } from "./normalize";
+import type { ConflictCandidate, DossierField, Evidence, Proposal, ResolutionEvent } from "./types";
 
 export type ApplyEvent =
   | {
@@ -188,7 +188,7 @@ function applyAdjudicate(
 
     return {
       ...field,
-      status: "confirmed",
+      status: winner.source === "document" ? "confirmed" : "user-provided",
       originalValue: winner.value,
       normalizedValue: winner.normalizedValue,
       markers: field.markers.includes("adjudicated")

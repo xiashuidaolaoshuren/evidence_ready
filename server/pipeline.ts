@@ -1,22 +1,22 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { assessCoverage } from "../src/domain/coverage.js";
-import { KETTLE_FIELDS } from "../src/domain/fields.js";
-import { extractionPrompt } from "../src/domain/prompt.js";
+import { assessCoverage } from "@/domain/coverage";
+import { KETTLE_FIELDS } from "@/domain/fields";
+import { extractionPrompt } from "@/domain/prompt";
 import {
   reconcileCandidates,
   type VerifiedCandidate,
-} from "../src/domain/reconcile.js";
-import { extractionResponseSchema } from "../src/domain/schemas.js";
+} from "@/domain/reconcile";
+import { extractionResponseSchema } from "@/domain/schemas";
 import type {
   Candidate,
   DossierField,
   ExtractionMode,
   RejectedCandidate,
-} from "../src/domain/types.js";
-import { verifyCitation } from "../src/domain/verify.js";
-import { fetchExtractionPayload, ModelError, type ModelTransport } from "./model.js";
-import { extractPages, PdfExtractError } from "./pdf.js";
+} from "@/domain/types";
+import { verifyCitation } from "@/domain/verify";
+import { fetchExtractionPayload, ModelError, type ModelTransport } from "./model";
+import { extractPages, PdfExtractError } from "./pdf";
 import { ZodError } from "zod";
 
 interface PageCorpusDocument {
@@ -46,12 +46,17 @@ export interface PipelineUpload {
   buffer: Buffer;
 }
 
+export const EXTRACTION_DEADLINE_MS = 110_000;
+export const MAX_EXTRACTED_TEXT_CHARS = 100_000;
+
 export interface RunExtractionInput {
   mode: ExtractionMode;
   fixtureDir?: string;
   uploads?: PipelineUpload[];
   transport?: ModelTransport;
   apiKey?: string;
+  signal?: AbortSignal;
+  deadlineMs?: number;
   onProgress?: (
     stage: ExtractionStageId,
     status: ExtractionStageStatus,
@@ -73,6 +78,63 @@ export class AllSourcesFailedError extends Error {
     this.name = "AllSourcesFailedError";
     this.failedSources = failedSources;
   }
+}
+
+export class ExtractionTimeoutError extends Error {
+  constructor() {
+    super("Extraction took too long. Try again.");
+    this.name = "ExtractionTimeoutError";
+  }
+}
+
+export class TextTooLargeError extends Error {
+  constructor() {
+    super(
+      "These documents are too long for one extraction. Submit fewer or shorter documents.",
+    );
+    this.name = "TextTooLargeError";
+  }
+}
+
+function measureExtractedText(corpus: PageCorpus): number {
+  return corpus.documents.reduce(
+    (total, document) =>
+      total +
+      document.pages.reduce((pageTotal, page) => pageTotal + page.text.length, 0),
+    0,
+  );
+}
+
+async function withExtractionDeadline<T>(
+  work: () => Promise<T>,
+  options: { deadlineMs: number; signal?: AbortSignal },
+): Promise<T> {
+  if (options.signal?.aborted) {
+    throw options.signal.reason ?? new DOMException("Aborted", "AbortError");
+  }
+
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new ExtractionTimeoutError()),
+      options.deadlineMs,
+    );
+    const onAbort = () => {
+      reject(options.signal?.reason ?? new DOMException("Aborted", "AbortError"));
+    };
+    options.signal?.addEventListener("abort", onAbort, { once: true });
+
+    work()
+      .then((value) => {
+        clearTimeout(timer);
+        options.signal?.removeEventListener("abort", onAbort);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        options.signal?.removeEventListener("abort", onAbort);
+        reject(error);
+      });
+  });
 }
 
 export interface RunExtractionResult {
@@ -233,12 +295,23 @@ export async function runExtraction(
       join(input.fixtureDir!, "recorded-extraction.json"),
     );
   } else {
+    if (measureExtractedText(corpus) > MAX_EXTRACTED_TEXT_CHARS) {
+      throw new TextTooLargeError();
+    }
+
     const prompt = extractionPrompt({ documents: corpus.documents });
-    const fetched = await fetchExtractionPayload({
-      prompt,
-      transport: input.transport,
-      apiKey: input.apiKey,
-    });
+    const fetched = await withExtractionDeadline(
+      () =>
+        fetchExtractionPayload({
+          prompt,
+          transport: input.transport,
+          apiKey: input.apiKey,
+        }),
+      {
+        deadlineMs: input.deadlineMs ?? EXTRACTION_DEADLINE_MS,
+        signal: input.signal,
+      },
+    );
     extractionPayload = fetched.normalized;
   }
   emitProgress(onProgress, "model-extract", "done");

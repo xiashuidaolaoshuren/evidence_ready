@@ -2,8 +2,8 @@
 import userEvent from "@testing-library/user-event";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ProposalConfirmation } from "./ProposalConfirmation.js";
-import type { Proposal } from "@/domain/types.js";
+import { ProposalConfirmation } from "./ProposalConfirmation";
+import type { Proposal } from "@/domain/types";
 
 describe("ProposalConfirmation", () => {
   afterEach(() => {

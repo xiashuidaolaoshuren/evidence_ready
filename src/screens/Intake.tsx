@@ -1,9 +1,11 @@
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { ExtractionMode } from "@/domain/types.js";
-import { validateUploadFiles, MAX_UPLOAD_COUNT } from "./intake-upload.js";
+import type { ExtractionMode } from "@/domain/types";
+import { validateUploadFiles, MAX_UPLOAD_COUNT } from "./intake-upload";
 
 export interface IntakeProps {
+  publicDemo?: boolean;
+  sessionNotice?: string | null;
   onStartBundled: (mode: ExtractionMode) => void;
   onStartUpload: (files: File[]) => void;
 }
@@ -14,7 +16,12 @@ const PRIVACY_SENTENCE =
 const COVERAGE_GATE_NOTE =
   "Documents can parse successfully and still fail the essential-coverage check if too few essential fields produce any candidate, the interview does not open. The threshold is a declared constant, not a model judgement, so a thin marketing PDF cannot turn the session into a data-entry form.";
 
-export function Intake({ onStartBundled, onStartUpload }: IntakeProps) {
+export function Intake({
+  publicDemo = false,
+  sessionNotice = null,
+  onStartBundled,
+  onStartUpload,
+}: IntakeProps) {
   const [mode, setMode] = useState<ExtractionMode>("recorded");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -34,7 +41,20 @@ export function Intake({ onStartBundled, onStartUpload }: IntakeProps) {
         interviews you about whatever conflicts or is still missing.
       </p>
 
-      <div className="grid-2 mt-[var(--gap-xl)] items-start">
+      {sessionNotice ? (
+        <p className="note mt-[var(--gap-md)] text-[var(--st-unverified)]" role="status">
+          {sessionNotice}
+        </p>
+      ) : null}
+
+      {publicDemo ? (
+        <p className="note mt-[var(--gap-md)]">
+          Live extraction and uploading your own documents are not part of this
+          demo.
+        </p>
+      ) : null}
+
+      <div className={`${publicDemo ? "" : "grid-2"} mt-[var(--gap-xl)] items-start`}>
         <div className="card stack">
           <div>
             <h3>
@@ -55,56 +75,66 @@ export function Intake({ onStartBundled, onStartUpload }: IntakeProps) {
               <span className="meta">PDF · 4 pages</span>
             </div>
           </div>
-          <div
-            className="stack gap-[var(--gap-sm)]"
-            role="radiogroup"
-            aria-label="Extraction mode"
-          >
-            <label
-              className={`mode-card ${mode === "recorded" ? "selected" : ""}`}
+          {publicDemo ? (
+            <p className="note">
+              This public demo replays the bundled recorded extraction only.
+            </p>
+          ) : (
+            <div
+              className="stack gap-[var(--gap-sm)]"
+              role="radiogroup"
+              aria-label="Extraction mode"
             >
-              <input
-                type="radio"
-                name="mode"
-                value="recorded"
-                checked={mode === "recorded"}
-                onChange={() => setMode("recorded")}
-              />
-              <span>
-                <strong>Recorded extraction — default</strong>
-                <p>
-                  Replays a stored extraction response. No API key needed;
-                  always reproduces the same conflicts, gaps, and rejected
-                  citation.
-                </p>
-              </span>
-            </label>
-            <label
-              className={`mode-card ${mode === "live" ? "selected" : ""}`}
-            >
-              <input
-                type="radio"
-                name="mode"
-                value="live"
-                checked={mode === "live"}
-                onChange={() => setMode("live")}
-              />
-              <span>
-                <strong>Live extraction</strong>
-                <p>
-                  Sends the same two documents to DeepSeek via OpenRouter.
-                  Requires a server-side OpenRouter API key.
-                </p>
-              </span>
-            </label>
-          </div>
+              <label
+                className={`mode-card ${mode === "recorded" ? "selected" : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="mode"
+                  value="recorded"
+                  checked={mode === "recorded"}
+                  onChange={() => setMode("recorded")}
+                />
+                <span>
+                  <strong>Recorded extraction — default</strong>
+                  <p>
+                    Replays a stored extraction response. No API key needed;
+                    always reproduces the same conflicts, gaps, and rejected
+                    citation.
+                  </p>
+                </span>
+              </label>
+              <label
+                className={`mode-card ${mode === "live" ? "selected" : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="mode"
+                  value="live"
+                  checked={mode === "live"}
+                  onChange={() => setMode("live")}
+                />
+                <span>
+                  <strong>Live extraction</strong>
+                  <p>
+                    Sends the same two documents to DeepSeek via OpenRouter.
+                    Requires a server-side OpenRouter API key.
+                  </p>
+                </span>
+              </label>
+            </div>
+          )}
           <div>
-            <Button type="button" onClick={() => onStartBundled(mode)}>
+            <Button
+              type="button"
+              onClick={() => onStartBundled(publicDemo ? "recorded" : mode)}
+            >
               Load the bundled example
             </Button>
           </div>
         </div>
 
+        {!publicDemo ? (
         <div className="card stack">
           <div>
             <h3>
@@ -115,7 +145,7 @@ export function Intake({ onStartBundled, onStartUpload }: IntakeProps) {
           <label className="dropzone" htmlFor={fileInputId}>
             <strong className="text-[var(--fg)]">Choose PDF or TXT files</strong>
             <p className="note mt-[6px] mb-0">
-              Up to 3 files · 10 MB each · text-based PDF only
+              Up to 3 files · 4 MB total · text-based PDF only
             </p>
           </label>
           <input
@@ -196,6 +226,7 @@ export function Intake({ onStartBundled, onStartUpload }: IntakeProps) {
             </p>
           ) : null}
         </div>
+        ) : null}
       </div>
     </section>
   );

@@ -6,7 +6,7 @@ import {
   interpretAnswer,
   postExtractStream,
   type ExtractResponse,
-} from "./api.js";
+} from "./api";
 
 function sseResultResponse(result: ExtractResponse): Response {
   const body = `event: result\ndata: ${JSON.stringify({ type: "result", result })}\n\n`;
@@ -135,6 +135,23 @@ describe("extractFixture", () => {
 
     await expect(extractFixture("recorded")).rejects.toMatchObject({
       code: "internal-error",
+    });
+  });
+
+  it("rejects with internal-error when the server returns non-JSON HTML", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("<html><body>timeout</body></html>", {
+          status: 500,
+          headers: { "Content-Type": "text/html" },
+        }),
+      ),
+    );
+
+    await expect(extractFixture("recorded")).rejects.toMatchObject({
+      code: "internal-error",
+      message: "Unexpected server error.",
     });
   });
 

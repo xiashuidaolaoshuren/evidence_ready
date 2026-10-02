@@ -19,7 +19,7 @@ import {
   verifyCitation,
   extractionPrompt,
   interpretPrompt,
-} from "./index.js";
+} from "./index";
 
 describe("domain barrel exports", () => {
   it("re-exports the public surface", () => {

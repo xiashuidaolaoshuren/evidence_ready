@@ -5,7 +5,7 @@ import {
   FIELD_TIERS,
   PROVENANCE_MARKERS,
   VALUE_KINDS,
-} from "./types.js";
+} from "./types";
 
 describe("domain enumerated sets", () => {
   it("defines the five field statuses", () => {

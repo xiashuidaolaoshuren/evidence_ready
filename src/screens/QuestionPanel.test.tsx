@@ -2,9 +2,9 @@
 import userEvent from "@testing-library/user-event";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { QuestionPanel } from "./QuestionPanel.js";
-import type { DossierField } from "@/domain/types.js";
-import type { Question } from "@/domain/planner.js";
+import { QuestionPanel } from "./QuestionPanel";
+import type { DossierField } from "@/domain/types";
+import type { Question } from "@/domain/planner";
 
 function field(overrides: Partial<DossierField> = {}): DossierField {
   return {

@@ -1,4 +1,4 @@
-import type { FieldTier, ValueKind } from "./types.js";
+import type { FieldTier, ValueKind } from "./types";
 
 export interface FieldDefinition {
   key: string;

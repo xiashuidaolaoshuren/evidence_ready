@@ -1,4 +1,4 @@
-import type { Citation, Evidence } from "./types.js";
+import type { Citation, Evidence } from "./types";
 
 export const WINDOW_RADIUS = 120;
 

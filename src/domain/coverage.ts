@@ -1,5 +1,5 @@
-import { essentialKeys } from "./fields.js";
-import type { DossierField } from "./types.js";
+import { essentialKeys } from "./fields";
+import type { DossierField } from "./types";
 
 export const ESSENTIAL_COVERAGE_THRESHOLD = 0.5;
 

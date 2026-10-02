@@ -3,7 +3,7 @@ import {
   proposalSchema,
   type ExtractionResponse,
   type ProposalResponse,
-} from "../src/domain/schemas.js";
+} from "@/domain/schemas";
 import { ZodError } from "zod";
 
 export const OPENROUTER_MODEL = "deepseek/deepseek-v4-flash-vision-exp";
@@ -43,8 +43,34 @@ export type ModelLogFn = (event: ModelLogEvent) => void;
 
 const CONTENT_PREVIEW_LIMIT = 500;
 
+function stripContentPreview(event: ModelLogEvent): ModelLogEvent {
+  if (event.phase === "response") {
+    const { contentPreview: _contentPreview, ...rest } = event;
+    return rest as ModelLogEvent;
+  }
+  if (event.phase === "parse-fail" || event.phase === "schema-fail") {
+    const { contentPreview: _contentPreview, ...rest } = event;
+    return rest as ModelLogEvent;
+  }
+  return event;
+}
+
+export function prepareModelLogEvent(event: ModelLogEvent): ModelLogEvent {
+  if (process.env.VERCEL) {
+    return stripContentPreview(event);
+  }
+  if (process.env.EVIDENCEREADY_LOG_MODEL_CONTENT === "1") {
+    return event;
+  }
+  return stripContentPreview(event);
+}
+
 export function defaultModelLog(event: ModelLogEvent): void {
   console.info("[model]", sanitizeLogOutput(JSON.stringify(event)));
+}
+
+function emitModelLog(log: ModelLogFn, event: ModelLogEvent): void {
+  log(prepareModelLogEvent(event));
 }
 
 export function sanitizeLogOutput(serialized: string): string {
@@ -170,7 +196,7 @@ async function requestStructuredJson(
   try {
     return { parsed: parseJson(first), rawContent: first };
   } catch {
-    log({
+    emitModelLog(log, {
       phase: "parse-fail",
       attempt: "first",
       contentPreview: previewContent(first),
@@ -184,7 +210,7 @@ async function requestStructuredJson(
     try {
       return { parsed: parseJson(repaired), rawContent: repaired };
     } catch {
-      log({
+      emitModelLog(log, {
         phase: "parse-fail",
         attempt: "repair",
         contentPreview: previewContent(repaired),
@@ -201,7 +227,7 @@ export function createDefaultTransport(
   const log = options.log ?? defaultModelLog;
 
   return async (prompt: string) => {
-    log({
+    emitModelLog(log, {
       phase: "request",
       model: OPENROUTER_MODEL,
       promptChars: prompt.length,
@@ -238,7 +264,7 @@ export function createDefaultTransport(
     const message = choice?.message;
     const content = message?.content ?? "";
 
-    log({
+    emitModelLog(log, {
       phase: "response",
       status: response.status,
       durationMs: Date.now() - startedAt,
@@ -280,7 +306,7 @@ export async function extractCandidates(
     return extractionResponseSchema.parse(normalized);
   } catch (error) {
     if (error instanceof ZodError) {
-      log({
+      emitModelLog(log, {
         phase: "schema-fail",
         issues: formatZodIssues(error),
         contentPreview: previewContent(rawContent),
@@ -307,7 +333,7 @@ export async function interpretAnswer(
     return proposalSchema.parse(normalized);
   } catch (error) {
     if (error instanceof ZodError) {
-      log({
+      emitModelLog(log, {
         phase: "schema-fail",
         issues: formatZodIssues(error),
         contentPreview: previewContent(rawContent),

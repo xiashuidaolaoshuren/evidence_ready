@@ -1,5 +1,5 @@
-import { KETTLE_FIELDS } from "./fields.js";
-import type { DossierField, FieldStatus, InterviewState } from "./types.js";
+import { KETTLE_FIELDS } from "./fields";
+import type { DossierField, FieldStatus, InterviewState } from "./types";
 
 export const SOFT_CAP = 5;
 

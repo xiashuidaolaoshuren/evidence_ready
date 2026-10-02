@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import type { FailedSource } from "@/app-state.js";
+import type { FailedSource } from "@/state/app-state";
 import {
   ESSENTIAL_COVERAGE_THRESHOLD,
-} from "@/domain/coverage.js";
-import { essentialKeys } from "@/domain/fields.js";
-import type { DossierField } from "@/domain/types.js";
+} from "@/domain/coverage";
+import { essentialKeys } from "@/domain/fields";
+import type { DossierField } from "@/domain/types";
 
 export interface InsufficientEvidenceProps {
   dossier: DossierField[];

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { KETTLE_FIELDS } from "./fields.js";
-import { applyEvent, parseAnswer } from "./apply.js";
-import { authoringReadiness } from "./readiness.js";
-import type { DossierField, Evidence, Proposal } from "./types.js";
+import { KETTLE_FIELDS } from "./fields";
+import { applyEvent, parseAnswer } from "./apply";
+import { authoringReadiness } from "./readiness";
+import type { DossierField, Evidence, Proposal } from "./types";
 
 function dossierField(
   key: string,
@@ -299,7 +299,7 @@ describe("applyEvent adjudicate", () => {
     });
 
     const field = result.dossier.find((item) => item.key === "capacity")!;
-    expect(field.status).toBe("confirmed");
+    expect(field.status).toBe("user-provided");
     expect(field.originalValue).toBe("2.0 L");
     expect(field.normalizedValue).toBe("2 L");
     expect(field.markers).toContain("adjudicated");
@@ -326,7 +326,7 @@ describe("applyEvent adjudicate", () => {
     });
 
     const field = result.dossier.find((item) => item.key === "capacity")!;
-    expect(field.status).toBe("confirmed");
+    expect(field.status).toBe("user-provided");
     expect(field.originalValue).toBe("1.6 L");
     expect(field.normalizedValue).toBe("1.6 L");
     expect(field.markers).toContain("adjudicated");

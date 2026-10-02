@@ -1,4 +1,4 @@
-import type { QuestionShape } from "@/domain/planner.js";
+import type { QuestionShape } from "@/domain/planner";
 
 interface InterviewCopy {
   question?: string;

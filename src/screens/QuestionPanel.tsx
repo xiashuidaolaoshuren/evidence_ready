@@ -1,11 +1,11 @@
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { ApplyEvent } from "@/domain/apply.js";
-import { parseAnswer } from "@/domain/apply.js";
-import { KETTLE_FIELDS } from "@/domain/fields.js";
-import type { Question } from "@/domain/planner.js";
-import type { DossierField, Evidence } from "@/domain/types.js";
-import { interviewQuestion, interviewRationale } from "./interview-copy.js";
+import type { ApplyEvent } from "@/domain/apply";
+import { parseAnswer } from "@/domain/apply";
+import { KETTLE_FIELDS } from "@/domain/fields";
+import type { Question } from "@/domain/planner";
+import type { DossierField, Evidence } from "@/domain/types";
+import { interviewQuestion, interviewRationale } from "./interview-copy";
 
 export interface QuestionPanelProps {
   question: Question;

@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
-import type { ExtractionCounts, FailedSource } from "@/app-state.js";
-import { essentialKeys } from "@/domain/fields.js";
-import type { DossierField, ExtractionMode } from "@/domain/types.js";
-import { errorRecoveryAction } from "./extraction-errors.js";
+import type { ExtractionCounts, FailedSource } from "@/state/app-state";
+import { essentialKeys } from "@/domain/fields";
+import type { DossierField, ExtractionMode } from "@/domain/types";
+import { errorRecoveryAction } from "./extraction-errors";
 import {
   getStepClassName,
   getStepMark,
   isActiveStep,
   type ExtractionProgressState,
-} from "./extraction-steps.js";
+} from "./extraction-steps";
 
 export interface ExtractionProgressProps {
   mode: ExtractionMode;

@@ -49,7 +49,7 @@ Two or more candidates giving a scalar field different values after normalizatio
 _Avoid_: Discrepancy, mismatch, inconsistency
 
 **Adjudication**:
-A user's choice of one conflicting candidate over another. The chosen value stays confirmed and is marked as adjudicated; the losing evidence is retained.
+A user's choice among conflicting candidates. A documented winner stays confirmed; a value the user supplies stays user-provided. The choice is marked adjudicated, and the losing candidates are retained.
 _Avoid_: Resolution, decision
 
 ### Field status
@@ -81,5 +81,5 @@ A field update the model derives from a user's answer. Never written to the doss
 _Avoid_: Suggestion, inference, auto-fill
 
 **Authoring Readiness**:
-Whether the dossier can enter a manual-authoring workflow: no essential field missing, no unadjudicated conflict, and every essential value either confirmed or user-provided.
+Whether the dossier can enter a manual-authoring workflow: no essential field missing, no unadjudicated conflict on an essential field, and every essential value either confirmed or user-provided. A supporting field never blocks readiness.
 _Avoid_: Compliance, completeness score, validation, pass/fail

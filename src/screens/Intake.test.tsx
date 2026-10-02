@@ -2,7 +2,7 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Intake } from "./Intake.js";
+import { Intake } from "./Intake";
 
 describe("Intake", () => {
   afterEach(() => {
@@ -227,5 +227,21 @@ describe("Intake", () => {
     expect(screen.getByText("two.pdf")).toBeInTheDocument();
     expect(screen.getByText("three.pdf")).toBeInTheDocument();
     expect(screen.queryByText("four.pdf")).not.toBeInTheDocument();
+  });
+
+  it("hides live extraction and upload in public demo", () => {
+    render(
+      <Intake publicDemo onStartBundled={vi.fn()} onStartUpload={vi.fn()} />,
+    );
+
+    expect(
+      screen.queryByRole("radio", { name: /live extraction/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /upload your own documents/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/not part of this demo/i),
+    ).toBeInTheDocument();
   });
 });

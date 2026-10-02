@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { KETTLE_FIELDS } from "./fields.js";
-import { nextQuestion, shouldPause, SOFT_CAP } from "./planner.js";
-import type { DossierField, FieldStatus, InterviewState } from "./types.js";
+import { KETTLE_FIELDS } from "./fields";
+import { nextQuestion, shouldPause, SOFT_CAP } from "./planner";
+import type { DossierField, FieldStatus, InterviewState } from "./types";
 
 function emptyState(overrides: Partial<InterviewState> = {}): InterviewState {
   return {

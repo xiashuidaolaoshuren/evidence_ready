@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ModeBadge } from "@/components/ModeBadge";
-import { authoringReadiness } from "@/domain/readiness.js";
-import type { DossierField, Evidence, ExtractionMode } from "@/domain/types.js";
-import { DossierPanel } from "./DossierPanel.js";
-import { formatFieldValue } from "./source-labels.js";
-import { SourceDrawer } from "./SourceDrawer.js";
+import { authoringReadiness } from "@/domain/readiness";
+import type { DossierField, Evidence, ExtractionMode } from "@/domain/types";
+import { DossierPanel } from "./DossierPanel";
+import { formatFieldValue } from "./source-labels";
+import { SourceDrawer } from "./SourceDrawer";
 
 export interface ReadinessReportProps {
   dossier: DossierField[];
@@ -69,6 +69,12 @@ export function ReadinessReport({
   const ready = verdict === "ready";
   const missingCount = blockers.filter((b) => b.reason === "missing").length;
   const conflictFields = dossier.filter((f) => f.status === "conflicting");
+  const essentialConflictFields = conflictFields.filter(
+    (f) => f.tier === "essential",
+  );
+  const supportingConflictFields = conflictFields.filter(
+    (f) => f.tier === "supporting",
+  );
   const hasUnverified = blockers.some((b) => b.reason === "unverified");
   const missingEssentials = dossier.filter(
     (f) => f.tier === "essential" && f.status === "missing",
@@ -99,9 +105,9 @@ export function ReadinessReport({
       ? "No essential field is missing"
       : `No essential field is missing — ${missingCount} still open`;
   const conflictText =
-    conflictFields.length === 0
+    essentialConflictFields.length === 0
       ? "No conflict remains unadjudicated"
-      : `No conflict remains unadjudicated — ${conflictFields.map((f) => f.label).join(", ")}`;
+      : `No conflict remains unadjudicated — ${essentialConflictFields.map((f) => f.label).join(", ")}`;
 
   function openEvidence(evidence: Evidence, label: string) {
     setDrawer({
@@ -143,7 +149,7 @@ export function ReadinessReport({
           </div>
           <div className="mt-[var(--gap-md)]">
             <Criterion pass={missingCount === 0}>{missingText}</Criterion>
-            <Criterion pass={conflictFields.length === 0}>
+            <Criterion pass={essentialConflictFields.length === 0}>
               {conflictText}
             </Criterion>
             <Criterion pass={!hasUnverified}>
@@ -160,12 +166,12 @@ export function ReadinessReport({
 
         <div className="stack mt-[var(--gap-xl)]">
           <h3>Blocking conflicts</h3>
-          {conflictFields.length === 0 ? (
+          {essentialConflictFields.length === 0 ? (
             <p className="note">
               None — every conflict was adjudicated or none arose.
             </p>
           ) : (
-            conflictFields.map((entry) => (
+            essentialConflictFields.map((entry) => (
               <div key={entry.key} className="card">
                 <div className="row-between">
                   <strong>{entry.label}</strong>
@@ -189,6 +195,35 @@ export function ReadinessReport({
             ))
           )}
         </div>
+
+        {supportingConflictFields.length > 0 ? (
+          <div className="stack mt-[var(--gap-xl)]">
+            <h3>Supporting conflicts</h3>
+            <p className="note">These do not block readiness.</p>
+            {supportingConflictFields.map((entry) => (
+              <div key={entry.key} className="card">
+                <div className="row-between">
+                  <strong>{entry.label}</strong>
+                  <span className="pill pill-conflict">Conflicting</span>
+                </div>
+                <div className="grid-2 mt-[var(--gap-sm)]">
+                  {entry.conflictCandidates.map((candidate, index) => (
+                    <div key={index} className="candidate">
+                      <div className="cand-value text-[18px]">
+                        {String(candidate.value)}
+                      </div>
+                      <span className="meta">
+                        {candidate.source === "user" || !candidate.citation
+                          ? "asserted by user"
+                          : `${candidate.citation.documentId} · p.${candidate.citation.page}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         <div className="stack mt-[var(--gap-xl)]">
           <h3>Missing essential information</h3>
@@ -253,7 +288,10 @@ export function ReadinessReport({
               <div key={entry.key} className="card">
                 <div className="row-between">
                   <strong>{entry.label}</strong>
-                  <span className="tag">Adjudicated</span>
+                  <div className="row">
+                    <span>{STATUS_LABEL[entry.status]}</span>
+                    <span className="tag">Adjudicated</span>
+                  </div>
                 </div>
                 <div className="num mt-[6px] text-[17px]">
                   {String(entry.normalizedValue ?? entry.originalValue)}

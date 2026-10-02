@@ -4,7 +4,7 @@ import {
   FIELD_TIERS,
   PROVENANCE_MARKERS,
   VALUE_KINDS,
-} from "./types.js";
+} from "./types";
 
 const extractionCandidateSchema = z.object({
   fieldKey: z.string(),
@@ -52,7 +52,9 @@ const rejectedCandidateSchema = z.object({
 const conflictCandidateSchema = z.object({
   value: z.unknown(),
   normalizedValue: z.unknown(),
-  citation: citationSchema.optional(),
+  citation: citationSchema
+    .extend({ surroundingWindow: z.string().optional() })
+    .optional(),
   source: z.enum(["document", "user"]),
 });
 

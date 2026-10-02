@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { essentialKeys, KETTLE_FIELDS } from "./fields.js";
+import { essentialKeys, KETTLE_FIELDS } from "./fields";
 
 const GROUPS = [
   "Identity and Responsibility",

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { KETTLE_FIELDS, essentialKeys } from "./fields.js";
-import { authoringReadiness, READINESS_VERDICTS } from "./readiness.js";
-import type { DossierField, Evidence } from "./types.js";
+import { KETTLE_FIELDS, essentialKeys } from "./fields";
+import { authoringReadiness, READINESS_VERDICTS } from "./readiness";
+import type { DossierField, Evidence } from "./types";
 
 function dossierField(
   key: string,

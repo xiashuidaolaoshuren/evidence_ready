@@ -1,5 +1,5 @@
-import type { DossierField, Evidence, FieldStatus } from "@/domain/types.js";
-import { formatFieldValue, sourceDocLabel } from "./source-labels.js";
+import type { DossierField, Evidence, FieldStatus } from "@/domain/types";
+import { formatFieldValue, sourceDocLabel } from "./source-labels";
 
 export interface DossierPanelProps {
   dossier: DossierField[];

@@ -2,8 +2,8 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { InsufficientEvidence } from "./InsufficientEvidence.js";
-import type { DossierField } from "@/domain/types.js";
+import { InsufficientEvidence } from "./InsufficientEvidence";
+import type { DossierField } from "@/domain/types";
 
 function field(
   key: string,

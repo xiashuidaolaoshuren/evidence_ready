@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Citation } from "./types.js";
-import { WINDOW_RADIUS, captureWindow, verifyCitation } from "./verify.js";
+import type { Citation } from "./types";
+import { WINDOW_RADIUS, captureWindow, verifyCitation } from "./verify";
 
 describe("captureWindow window", () => {
   it("returns a window containing the quote with radius chars on each side when available", () => {

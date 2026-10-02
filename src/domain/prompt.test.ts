@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { KETTLE_FIELDS } from "./fields.js";
-import { extractionPrompt, interpretPrompt } from "./prompt.js";
+import { KETTLE_FIELDS } from "./fields";
+import { extractionPrompt, interpretPrompt } from "./prompt";
 
 describe("extractionPrompt", () => {
   it("lists every field key and delimits document text as untrusted", () => {
