@@ -19,6 +19,7 @@ export interface ApiErrorBody {
     code: string;
     message: string;
     envVar?: string;
+    retryAfterSeconds?: number;
     failedSources?: Array<{
       id: string;
       filename: string;

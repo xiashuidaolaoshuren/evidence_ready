@@ -32,7 +32,12 @@ export interface AppState {
   counts: ExtractionCounts | null;
   failedSources: FailedSource[] | undefined;
   interview: InterviewState;
-  error: { code: string; message: string; envVar?: string } | null;
+  error: {
+    code: string;
+    message: string;
+    envVar?: string;
+    retryAfterSeconds?: number;
+  } | null;
   progress: {
     currentStage: number;
     stageStatus: "started" | "done" | null;
@@ -47,7 +52,15 @@ export type AppAction =
       stageStatus: "started" | "done";
     }
   | { type: "extract-success"; coverage: "interview" | "insufficient"; dossier: DossierField[]; rejected: RejectedCandidate[]; counts: ExtractionCounts; failedSources?: FailedSource[]; mode: ExtractionMode }
-  | { type: "extract-failure"; error: { code: string; message: string; envVar?: string } }
+  | {
+      type: "extract-failure";
+      error: {
+        code: string;
+        message: string;
+        envVar?: string;
+        retryAfterSeconds?: number;
+      };
+    }
   | { type: "open-interview" }
   | { type: "continue-anyway" }
   | { type: "answer"; event: ApplyEvent }

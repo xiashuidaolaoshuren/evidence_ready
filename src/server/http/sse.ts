@@ -63,6 +63,9 @@ export function extractionSseResponse(
             code: mapped.code,
             message: mapped.message,
             ...(mapped.envVar ? { envVar: mapped.envVar } : {}),
+            ...(mapped.retryAfterSeconds !== undefined
+              ? { retryAfterSeconds: mapped.retryAfterSeconds }
+              : {}),
             ...(mapped.failedSources
               ? { failedSources: mapped.failedSources }
               : {}),

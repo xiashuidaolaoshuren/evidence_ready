@@ -16,10 +16,21 @@ function sseResultResponse(result: ExtractResponse): Response {
   });
 }
 
-function sseErrorResponse(code: string, message: string, envVar?: string): Response {
+function sseErrorResponse(
+  code: string,
+  message: string,
+  options?: { envVar?: string; retryAfterSeconds?: number },
+): Response {
   const body = `event: error\ndata: ${JSON.stringify({
     type: "error",
-    error: { code, message, ...(envVar ? { envVar } : {}) },
+    error: {
+      code,
+      message,
+      ...(options?.envVar ? { envVar: options.envVar } : {}),
+      ...(options?.retryAfterSeconds !== undefined
+        ? { retryAfterSeconds: options.retryAfterSeconds }
+        : {}),
+    },
   })}\n\n`;
   return new Response(body, {
     status: 200,
@@ -113,7 +124,7 @@ describe("extractFixture", () => {
         sseErrorResponse(
           "missing-key",
           "OpenRouter API key is not configured.",
-          "OPENROUTER_API_KEY",
+          { envVar: "OPENROUTER_API_KEY" },
         ),
       ),
     );
@@ -155,14 +166,33 @@ describe("extractFixture", () => {
     });
   });
 
-  it("rejects with network code when fetch throws", async () => {
+  it("rejects with model-unavailable when fetch throws", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
     );
 
     await expect(extractFixture("recorded")).rejects.toMatchObject({
-      code: "network",
+      code: "model-unavailable",
+      message: "The model could not be reached.",
+    });
+  });
+
+  it("rejects with retryAfterSeconds from SSE error events", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        sseErrorResponse(
+          "rate-limited",
+          "The model is rate limiting requests. Wait, then retry.",
+          { retryAfterSeconds: 30 },
+        ),
+      ),
+    );
+
+    await expect(extractFixture("live")).rejects.toMatchObject({
+      code: "rate-limited",
+      retryAfterSeconds: 30,
     });
   });
 });
@@ -241,6 +271,31 @@ describe("interpretAnswer", () => {
       }),
     });
     expect(result.proposals).toHaveLength(1);
+  });
+
+  it("rejects with retryAfterSeconds from JSON error bodies", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "rate-limited",
+              message: "The model is rate limiting requests. Wait, then retry.",
+              retryAfterSeconds: 45,
+            },
+          }),
+          { status: 429, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    await expect(
+      interpretAnswer("importer-contact", "Acme", [] as never),
+    ).rejects.toMatchObject({
+      code: "rate-limited",
+      retryAfterSeconds: 45,
+    });
   });
 
   it("rejects with rephrase when interpretation fails", async () => {

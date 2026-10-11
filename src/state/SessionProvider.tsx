@@ -211,13 +211,17 @@ function SessionProvider({
         const apiError =
           error instanceof ApiError
             ? error
-            : new ApiError("network", "Network request failed.");
+            : new ApiError(
+                "model-unavailable",
+                "The model could not be reached.",
+              );
         dispatch({
           type: "extract-failure",
           error: {
             code: apiError.code,
             message: apiError.message,
             envVar: apiError.envVar,
+            retryAfterSeconds: apiError.retryAfterSeconds,
           },
         });
       }

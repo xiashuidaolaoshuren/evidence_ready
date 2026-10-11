@@ -18,6 +18,9 @@ export const INTERVIEW_REFRESH_NOTE =
 export const PUBLIC_DEMO_ONE_FIELD_GUIDANCE =
   "This demo takes one field at a time. Enter only this field's value — answer interpretation is not available here.";
 
+export const INTERPRET_ONE_FIELD_SENTENCE =
+  "You can still answer with only this field's value.";
+
 export interface InterviewWorkspaceProps {
   dossier: DossierField[];
   interview: InterviewState;
@@ -191,8 +194,30 @@ export function InterviewWorkspace({
       }
       setPendingProposals(proposals);
     } catch (error) {
-      if (error instanceof ApiError && error.code === "rephrase") {
-        setInterpretError(error.message);
+      const apiError =
+        error instanceof ApiError
+          ? error
+          : typeof error === "object" &&
+              error !== null &&
+              "code" in error &&
+              "message" in error &&
+              typeof (error as ApiError).code === "string" &&
+              typeof (error as ApiError).message === "string"
+            ? (error as ApiError)
+            : null;
+
+      if (apiError?.code === "rephrase") {
+        setInterpretError(apiError.message);
+        return;
+      }
+      if (apiError) {
+        const waitSuffix =
+          apiError.code === "rate-limited" && apiError.retryAfterSeconds
+            ? ` Wait ${apiError.retryAfterSeconds} seconds before trying again.`
+            : "";
+        setInterpretError(
+          `${apiError.message}${waitSuffix} ${INTERPRET_ONE_FIELD_SENTENCE}`,
+        );
         return;
       }
       setInterpretError("Could not interpret the answer. Please rephrase.");

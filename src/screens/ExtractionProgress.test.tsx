@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ExtractionProgress } from "./ExtractionProgress";
@@ -148,9 +148,8 @@ describe("ExtractionProgress", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows missing-key card with env var setup copy, Retry live, and Use recorded", async () => {
+  it("shows missing-key card with env setup copy and Use recorded without Retry", async () => {
     const user = userEvent.setup();
-    const onRetry = vi.fn();
     const onUseRecorded = vi.fn();
 
     render(
@@ -166,7 +165,7 @@ describe("ExtractionProgress", () => {
         failedSources={undefined}
         dossier={[]}
         progress={{ currentStage: 1, stageStatus: "started" }}
-        onRetry={onRetry}
+        onRetry={vi.fn()}
         onUseRecorded={onUseRecorded}
         onBackToIntake={vi.fn()}
         onOpenInterview={vi.fn()}
@@ -180,9 +179,10 @@ describe("ExtractionProgress", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/OPENROUTER_API_KEY=…/)).toBeInTheDocument();
     expect(screen.getByText(/\.env\.local/)).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /retry live extraction/i }));
-    expect(onRetry).toHaveBeenCalledOnce();
+    expect(
+      screen.queryByRole("button", { name: /retry live extraction/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^retry$/i })).not.toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", { name: /use recorded extraction instead/i }),
@@ -190,7 +190,7 @@ describe("ExtractionProgress", () => {
     expect(onUseRecorded).toHaveBeenCalledOnce();
   });
 
-  it("shows server message and Retry for transient network errors", async () => {
+  it("shows server message and Retry for model-unavailable errors", async () => {
     const user = userEvent.setup();
     const onRetry = vi.fn();
 
@@ -198,7 +198,10 @@ describe("ExtractionProgress", () => {
       <ExtractionProgress
         mode="live"
         outcome="failed"
-        error={{ code: "network", message: "Network request failed." }}
+        error={{
+          code: "model-unavailable",
+          message: "The model could not be reached.",
+        }}
         counts={null}
         failedSources={undefined}
         dossier={[]}
@@ -210,9 +213,97 @@ describe("ExtractionProgress", () => {
       />,
     );
 
-    expect(screen.getByText("Network request failed.")).toBeInTheDocument();
+    expect(screen.getByText("The model could not be reached.")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^retry$/i }));
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("disables Retry until rate-limit wait elapses and shows wait seconds", async () => {
+    vi.useFakeTimers();
+    const onRetry = vi.fn();
+
+    render(
+      <ExtractionProgress
+        mode="live"
+        outcome="failed"
+        error={{
+          code: "rate-limited",
+          message: "The model is rate limiting requests. Wait, then retry.",
+          retryAfterSeconds: 25,
+        }}
+        counts={null}
+        failedSources={undefined}
+        dossier={[]}
+        progress={{ currentStage: 1, stageStatus: "started" }}
+        onRetry={onRetry}
+        onUseRecorded={vi.fn()}
+        onBackToIntake={vi.fn()}
+        onOpenInterview={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/25/)).toBeInTheDocument();
+    const retryButton = screen.getByRole("button", { name: /^retry$/i });
+    expect(retryButton).toBeDisabled();
+    expect(onRetry).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(25_000);
+    });
+    expect(retryButton).not.toBeDisabled();
+    fireEvent.click(retryButton);
+    expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("shows Back to intake for text-too-large and live-unavailable", async () => {
+    const user = userEvent.setup();
+    const onBackToIntake = vi.fn();
+
+    const { rerender } = render(
+      <ExtractionProgress
+        mode="live"
+        outcome="failed"
+        error={{
+          code: "text-too-large",
+          message:
+            "These documents are too long for one extraction. Submit fewer or shorter documents.",
+        }}
+        counts={null}
+        failedSources={undefined}
+        dossier={[]}
+        progress={{ currentStage: 1, stageStatus: "started" }}
+        onRetry={vi.fn()}
+        onUseRecorded={vi.fn()}
+        onBackToIntake={onBackToIntake}
+        onOpenInterview={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /back to intake/i }));
+    expect(onBackToIntake).toHaveBeenCalledOnce();
+
+    onBackToIntake.mockClear();
+    rerender(
+      <ExtractionProgress
+        mode="live"
+        outcome="failed"
+        error={{
+          code: "live-unavailable",
+          message: "Live extraction is not available in this demo.",
+        }}
+        counts={null}
+        failedSources={undefined}
+        dossier={[]}
+        progress={{ currentStage: 1, stageStatus: "started" }}
+        onRetry={vi.fn()}
+        onUseRecorded={vi.fn()}
+        onBackToIntake={onBackToIntake}
+        onOpenInterview={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: /back to intake/i }));
+    expect(onBackToIntake).toHaveBeenCalledOnce();
   });
 
   it("shows Back to intake for encrypted file errors", async () => {

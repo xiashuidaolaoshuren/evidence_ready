@@ -136,7 +136,7 @@ describe("createDefaultTransport", () => {
     ]);
   });
 
-  it("maps OpenRouter 402 payment required to quota", async () => {
+  it("maps OpenRouter 402 payment required to out-of-credits", async () => {
     const fetchMock = vi.fn(async () => {
       return new Response("insufficient credits", { status: 402 });
     });
@@ -144,7 +144,7 @@ describe("createDefaultTransport", () => {
 
     await expect(
       extractCandidates({ prompt: "extract", apiKey: "or-test-key" }),
-    ).rejects.toMatchObject({ code: "quota" });
+    ).rejects.toMatchObject({ code: "out-of-credits" });
   });
 
   it("logs request and response with durationMs and content preview", async () => {
@@ -186,6 +186,54 @@ describe("createDefaultTransport", () => {
     });
     expect(typeof log.mock.calls[1]?.[0]?.durationMs).toBe("number");
     vi.unstubAllEnvs();
+  });
+
+  it("classifies HTTP 200 with an error object and empty content without repair", async () => {
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            message: "Rate limited",
+            metadata: { error_type: "rate_limit_exceeded" },
+          },
+          choices: [{ message: { content: "" } }],
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": "45",
+          },
+        },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      extractCandidates({ prompt: "extract", apiKey: "or-test-key" }),
+    ).rejects.toMatchObject({
+      code: "rate-limited",
+      retryAfterSeconds: 45,
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("returns non-empty assistant content when a sibling error object is present", async () => {
+    const content = JSON.stringify({ candidates: [] });
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: { metadata: { error_type: "rate_limit_exceeded" } },
+          choices: [{ message: { content } }],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const transport = createDefaultTransport("or-test-key");
+    await expect(transport("extract")).resolves.toBe(content);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 
   it("never logs api keys or authorization headers", async () => {
@@ -320,31 +368,35 @@ describe("extractCandidates", () => {
     });
   });
 
-  it("maps unknown transport failures to upstream", async () => {
+  it("maps unknown transport failures to model-unavailable", async () => {
     const transport = vi.fn(async () => {
       throw new Error("model overloaded");
     });
     await expect(
       extractCandidates({ prompt: "extract", transport, apiKey: "k" }),
-    ).rejects.toMatchObject({ code: "upstream" });
+    ).rejects.toMatchObject({ code: "model-unavailable" });
   });
 
-  it("maps HTTP 5xx transport failures to upstream", async () => {
+  it("maps HTTP 5xx transport failures to model-unavailable", async () => {
     const transport = vi.fn(async () => {
       throw Object.assign(new Error("service unavailable"), { status: 503 });
     });
     await expect(
       extractCandidates({ prompt: "extract", transport, apiKey: "k" }),
-    ).rejects.toMatchObject({ code: "upstream" });
+    ).rejects.toMatchObject({ code: "model-unavailable" });
   });
 
-  it("maps quota, auth, and network failures to typed errors", async () => {
-    const quota = vi.fn(async () => {
-      throw Object.assign(new Error("quota exceeded"), { status: 429 });
+  it("maps rate limit, auth, blocked, and network failures to typed errors", async () => {
+    const rateLimited = vi.fn(async () => {
+      throw Object.assign(new Error("rate limit"), { status: 429 });
     });
     await expect(
-      extractCandidates({ prompt: "extract", transport: quota, apiKey: "k" }),
-    ).rejects.toMatchObject({ code: "quota" });
+      extractCandidates({
+        prompt: "extract",
+        transport: rateLimited,
+        apiKey: "k",
+      }),
+    ).rejects.toMatchObject({ code: "rate-limited" });
 
     const auth = vi.fn(async () => {
       throw Object.assign(new Error("unauthorized"), { status: 401 });
@@ -353,12 +405,22 @@ describe("extractCandidates", () => {
       extractCandidates({ prompt: "extract", transport: auth, apiKey: "k" }),
     ).rejects.toMatchObject({ code: "auth" });
 
+    const blocked = vi.fn(async () => {
+      throw Object.assign(new Error("forbidden"), { status: 403 });
+    });
+    await expect(
+      extractCandidates({ prompt: "extract", transport: blocked, apiKey: "k" }),
+    ).rejects.toMatchObject({ code: "model-blocked" });
+
     const network = vi.fn(async () => {
       throw new TypeError("fetch failed");
     });
     await expect(
       extractCandidates({ prompt: "extract", transport: network, apiKey: "k" }),
-    ).rejects.toMatchObject({ code: "network" });
+    ).rejects.toMatchObject({
+      code: "model-unavailable",
+      message: "The model could not be reached.",
+    });
   });
 });
 

@@ -45,18 +45,29 @@ export type ProgressEvent =
   | { type: "result"; result: ExtractResponse }
   | {
       type: "error";
-      error: { code: string; message: string; envVar?: string };
+      error: {
+        code: string;
+        message: string;
+        envVar?: string;
+        retryAfterSeconds?: number;
+      };
     };
 
 export class ApiError extends Error {
   readonly code: string;
   readonly envVar?: string;
+  readonly retryAfterSeconds?: number;
 
-  constructor(code: string, message: string, envVar?: string) {
+  constructor(
+    code: string,
+    message: string,
+    options?: { envVar?: string; retryAfterSeconds?: number },
+  ) {
     super(message);
     this.name = "ApiError";
     this.code = code;
-    this.envVar = envVar;
+    this.envVar = options?.envVar;
+    this.retryAfterSeconds = options?.retryAfterSeconds;
   }
 }
 
@@ -65,6 +76,7 @@ interface ApiErrorBody {
     code: string;
     message: string;
     envVar?: string;
+    retryAfterSeconds?: number;
   };
 }
 
@@ -72,7 +84,10 @@ async function parseApiError(response: Response): Promise<ApiError> {
   try {
     const body = (await response.json()) as ApiErrorBody;
     if (body.error?.code && body.error?.message) {
-      return new ApiError(body.error.code, body.error.message, body.error.envVar);
+      return new ApiError(body.error.code, body.error.message, {
+        envVar: body.error.envVar,
+        retryAfterSeconds: body.error.retryAfterSeconds,
+      });
     }
   } catch {
     // fall through
@@ -161,11 +176,10 @@ export async function postExtractStream(
         } else if (event.type === "result") {
           result = event.result;
         } else if (event.type === "error") {
-          throw new ApiError(
-            event.error.code,
-            event.error.message,
-            event.error.envVar,
-          );
+          throw new ApiError(event.error.code, event.error.message, {
+            envVar: event.error.envVar,
+            retryAfterSeconds: event.error.retryAfterSeconds,
+          });
         }
       }
     }
@@ -178,11 +192,10 @@ export async function postExtractStream(
         } else if (event.type === "result") {
           result = event.result;
         } else if (event.type === "error") {
-          throw new ApiError(
-            event.error.code,
-            event.error.message,
-            event.error.envVar,
-          );
+          throw new ApiError(event.error.code, event.error.message, {
+            envVar: event.error.envVar,
+            retryAfterSeconds: event.error.retryAfterSeconds,
+          });
         }
       }
     }
@@ -196,7 +209,10 @@ export async function postExtractStream(
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError("network", "Network request failed.");
+    throw new ApiError(
+      "model-unavailable",
+      "The model could not be reached.",
+    );
   }
 }
 
@@ -270,6 +286,9 @@ export async function interpretAnswer(
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError("network", "Network request failed.");
+    throw new ApiError(
+      "model-unavailable",
+      "The model could not be reached.",
+    );
   }
 }

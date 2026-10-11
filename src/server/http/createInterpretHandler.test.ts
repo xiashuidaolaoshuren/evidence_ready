@@ -93,12 +93,15 @@ describe("createInterpretHandler", () => {
     expect(interpretAnswerFn).not.toHaveBeenCalled();
   });
 
-  it("returns gemini-unavailable JSON for upstream model faults", async () => {
+  it("returns model-unavailable JSON for model transport faults", async () => {
     const handler = createInterpretHandler({
       fixtureDir: ".",
       apiKey: "test-key",
       interpretAnswerFn: vi.fn(async () => {
-        throw new ModelError("upstream", "The extraction model is temporarily unavailable.");
+        throw new ModelError(
+          "model-unavailable",
+          "The extraction model is temporarily unavailable.",
+        );
       }),
     });
 
@@ -117,7 +120,7 @@ describe("createInterpretHandler", () => {
     expect(response.status).toBe(503);
     expect(response.headers.get("content-type")).toContain("application/json");
     expect(await response.json()).toMatchObject({
-      error: { code: "gemini-unavailable" },
+      error: { code: "model-unavailable" },
     });
   });
 });

@@ -2,8 +2,11 @@
 import userEvent from "@testing-library/user-event";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { InterviewWorkspace } from "./InterviewWorkspace";
-import { interpretAnswer } from "@/api";
+import { ApiError, interpretAnswer } from "@/api";
+import {
+  INTERPRET_ONE_FIELD_SENTENCE,
+  InterviewWorkspace,
+} from "./InterviewWorkspace";
 import type { DossierField, InterviewState } from "@/domain/types";
 
 vi.mock("@/api.js", async (importOriginal) => {
@@ -124,6 +127,81 @@ describe("InterviewWorkspace interpretation", () => {
       }),
     ).toBeInTheDocument();
     expect(onAnswer).not.toHaveBeenCalled();
+  });
+
+  async function submitInterpretableAnswer(user: ReturnType<typeof userEvent.setup>) {
+    const dossier: DossierField[] = [
+      dossierField("capacity", "confirmed", {
+        label: "Capacity",
+        originalValue: "1.5 L",
+        normalizedValue: "1.5 L",
+        markers: ["adjudicated"],
+      }),
+      dossierField("importer-contact", "missing", {
+        label: "Importer or responsible-party contact",
+        valueKind: "prose",
+      }),
+      dossierField("rated-power", "unverified", {
+        label: "Rated power",
+        group: "Electrical and Physical Information",
+        originalValue: "2200 W",
+        normalizedValue: "2200 W",
+      }),
+    ];
+
+    render(
+      <InterviewWorkspace
+        dossier={dossier}
+        interview={interviewBase}
+        onAnswer={vi.fn()}
+        onLeaveUnresolved={vi.fn()}
+        onContinuePastBudget={vi.fn()}
+        onContinueSupporting={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    await user.type(
+      screen.getByRole("textbox", { name: /your answer/i }),
+      "Acme Imports GmbH — rated power should be 2200 W",
+    );
+    await user.click(screen.getByRole("button", { name: /submit answer/i }));
+  }
+
+  it("shows the rephrase sentence for rephrase interpret failures", async () => {
+    const user = userEvent.setup();
+    vi.mocked(interpretAnswer).mockRejectedValue(
+      new ApiError(
+        "rephrase",
+        "Could not interpret the answer. Please rephrase.",
+      ),
+    );
+
+    await submitInterpretableAnswer(user);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Could not interpret the answer. Please rephrase."),
+      ).toBeInTheDocument();
+    });
+    expect(interpretAnswer).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the server message and one-field sentence for out-of-credits", async () => {
+    const user = userEvent.setup();
+    const message =
+      "The OpenRouter account has no credits left. Recorded extraction still works.";
+    vi.mocked(interpretAnswer).mockRejectedValue({ code: "out-of-credits", message });
+
+    await submitInterpretableAnswer(user);
+
+    await waitFor(() => {
+      const alert = screen.getByRole("alert");
+      expect(alert).toHaveTextContent(message);
+      expect(alert).toHaveTextContent(INTERPRET_ONE_FIELD_SENTENCE);
+    });
+    expect(screen.queryByText(/please rephrase/i)).not.toBeInTheDocument();
+    expect(interpretAnswer).toHaveBeenCalledTimes(1);
   });
 
   it("aborts interpretation when the workspace unmounts", async () => {
