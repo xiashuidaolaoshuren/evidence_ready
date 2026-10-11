@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { DossierField } from "@/domain/types";
-import { ModelError } from "../../../server/model.js";
+import { ModelError } from "../model.js";
 import { createInterpretHandler } from "./createInterpretHandler";
 
 function sampleDossier(): DossierField[] {

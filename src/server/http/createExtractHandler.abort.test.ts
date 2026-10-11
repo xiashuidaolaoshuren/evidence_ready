@@ -1,7 +1,7 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import type { RunExtractionInput } from "../../../server/pipeline";
+import type { RunExtractionInput } from "../pipeline";
 import { readSseEvents } from "./test-helpers";
 import { createExtractHandler } from "./createExtractHandler";
 

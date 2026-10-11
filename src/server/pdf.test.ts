@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { extractPages } from "./pdf.js";
 
-const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "../fixtures/kettle");
+const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "../../fixtures/kettle");
 
 describe("extractPages happy path", () => {
   it("returns page-bounded text for TXT uploads with page markers", async () => {
