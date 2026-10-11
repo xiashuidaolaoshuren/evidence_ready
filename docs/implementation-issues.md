@@ -241,3 +241,70 @@ Suggested use: limitations / AI-assisted workflow, one short anecdote.
 - What we would do next: map location/precondition (and unknown-model 404) to distinct codes and copy, instead of `gemini-unavailable`.
 
 ---
+
+## 5. Quality baseline review (spec §3)
+
+Reviewed on 2026-10-11 against today's tree, before the server move and the error-code change.
+
+### Bugs for T4
+
+No findings qualify as bugs. T4 has nothing to fix from this review.
+
+Glossary copy, the ADR 0002–0006 consequences that still hold, and the non-stream error envelope were checked and did not produce a bug. Ordinary English ("at least one file is required"), the footer denial ("not a legal-compliance conclusion"), and the health route's plain `ok` success body were not filed. Superseded ADR sentences (the Vite stack, and "every adjudication stays confirmed") were not filed.
+
+### Deferred
+
+#### Missing `server-only` import on the top-level server modules
+
+- **Tag:** deferred
+- **Checklist:** Server modules import `server-only`. No client module can reach the API key.
+- **File:** `server/model.ts`, `server/pipeline.ts`, `server/pdf.ts`, `server/intake.ts`
+- **Expected:** Server modules import `server-only`, and no client module can read the API key.
+- **Observed:** Those four modules do not import `server-only`. Every runtime module under `src/server/http/` does. No `"use client"` module imports `server/`. `OPENROUTER_API_KEY` is read only in `src/app/api/extract/route.ts`, `src/app/api/interpret/route.ts`, and `server/model.ts`. `src/screens/ExtractionProgress.tsx` shows the variable name, not the secret. Nothing in a client module reads the key, so this is not a key leak.
+- **Why deferred:** Adding the import does not change what a user can do today. T2 moves these files and must not add behaviour.
+
+#### Private live extraction is not wired through the extract handler
+
+- **Tag:** deferred
+- **Checklist:** ADR 0005, while checking that the public demo never calls the model. The migration spec also says a private deployment keeps live extraction working.
+- **File:** `src/server/http/createExtractHandler.ts`
+- **Expected:** On a private deployment, live extraction of the bundled example and multipart upload run the pipeline. The public demo never calls the model.
+- **Observed:** The public demo returns `live-unavailable` and does not call the model. A non-demo JSON body with `mode: "live"`, and any multipart upload, return HTTP 400 `invalid-intake` and never call `runExtraction`. Private answer interpretation does call the model.
+- **Why deferred:** Wiring that path would add the private live-extract and upload behaviour. It is not a T4 bug. The public-demo gate holds.
+
+### Closed by a later subtask
+
+These were checked. They are not bugs, and T4 does not fix them.
+
+#### Closed by T2 — the `server/` split
+
+- **Tag:** closed-by-T2
+- **Checklist:** Modules and tests that exist twice, once under `server/` and once under `src/server/`.
+- **File:** `server/model.ts`, `server/pipeline.ts`, `server/pdf.ts`, `server/intake.ts`, and their tests; `src/server/http/*`
+- **Observed:** The four implementations exist only under `server/`. `src/server/http/*` imports them via `../../../server/...`. Tests exist in both trees: `server/model.test.ts` with `src/server/model.test.ts`, and `server/pipeline.recorded.test.ts`, `server/pipeline.live.test.ts`, `server/pipeline.partial.test.ts`, `server/pipeline.progress.test.ts`, and `server/pipeline.insufficient.test.ts` with `src/server/pipeline.test.ts`. PDF and intake tests exist only under `server/` (`server/pdf.test.ts`, `server/pdf.encrypted.test.ts`, `server/pdf.errors.test.ts`, `server/intake.test.ts`).
+
+#### Closed by T3 — known-wrong model codes
+
+No separate dead export exists only to preserve these codes. The live mappings and the tests below are the lock.
+
+- **Tag:** closed-by-T3
+- **Checklist:** Dead exports and tests that lock `gemini-unavailable`, `quota` for both 402 and 429, and HTTP 403 as `auth`.
+- **File:** `server/model.ts`
+- **Observed:** `mapTransportError` maps HTTP 401 and HTTP 403 to `auth`, and both HTTP 402 and HTTP 429 to `quota`. Other failures become `upstream` or `network`.
+
+- **Tag:** closed-by-T3
+- **Checklist:** Tests that lock those codes.
+- **File:** `server/model.test.ts`
+- **Observed:** "maps OpenRouter 402 payment required to quota" expects `quota`. "maps quota, auth, and network failures to typed errors" expects HTTP 429 as `quota` and HTTP 401 as `auth`. HTTP 403 uses the same `auth` branch as 401.
+
+- **Tag:** closed-by-T3
+- **Checklist:** Tests and mappings that lock `gemini-unavailable`.
+- **File:** `src/server/http/map-model-error.ts`, `src/server/http/map-stream-error.ts`, `src/server/http/createInterpretHandler.test.ts`
+- **Observed:** An `upstream` model error is emitted as `gemini-unavailable`. The interpret test "returns gemini-unavailable JSON for upstream model faults" locks that code.
+
+- **Tag:** closed-by-T3
+- **Checklist:** Recovery actions for the known-wrong codes.
+- **File:** `src/screens/extraction-errors.ts`
+- **Observed:** `errorRecoveryAction` treats `network`, `quota`, `auth`, and `gemini-unavailable` as retry. Any code outside the missing-key and file-error sets, including an unknown code, also returns retry.
+
+---
