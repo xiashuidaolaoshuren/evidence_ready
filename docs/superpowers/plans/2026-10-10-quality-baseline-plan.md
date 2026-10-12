@@ -148,7 +148,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T5 — Tests for screens that have none
 
-- [ ] **Do:** Add the five component tests named in spec §6. Assert behaviour, not layout.
+- [x] **Do:** Add the five component tests named in spec §6. Assert behaviour, not layout.
 - **Consumes:** `BudgetPause`, `SourceDrawer`, `ModeBadge`, `AppChrome`, and `AppShell` as they exist today. `AppShell` needs the session provider.
 - **Produces:** Tests that fail if continue/finish, drawer content and close, the two mode labels, the post-intake restart button, the storage-warning text, or the active phase screen is removed.
 - **Acceptance:** `BudgetPause` calls `onContinue` and `onFinish`. `SourceDrawer` shows the passage it was given and calls close. `ModeBadge` shows a distinct label for `recorded` and `live`. `AppChrome` omits Restart when not post-intake, shows it when post-intake, and shows `SESSION_PERSISTENCE_WARNING` when asked. `AppShell` renders the intake screen at the initial phase. No assertion depends on pixel spacing.
