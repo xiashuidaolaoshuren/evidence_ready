@@ -185,7 +185,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T8 — Playwright paths
 
-- [ ] **Do:** Extend the public-demo Playwright suite with a keyboard-only recorded path, interview/report history, and restart.
+- [x] **Do:** Extend the public-demo Playwright suite with a keyboard-only recorded path, interview/report history, and restart.
 - **Consumes:** The recorded kettle flow and the T7 keyboard behaviour. The app must already be servable with `npm run dev` as the public demo.
 - **Produces:** Three additional tests in `e2e/recorded-kettle.spec.ts`, or a sibling spec file if the current file would mix unrelated setup.
 - **Acceptance:** Keyboard only, using Tab, Enter, and type, with no pointer, reaches the report from intake. No request hits OpenRouter. Back from the report shows the interview, Forward shows the report, and an applied answer is still visible. Restart session shows intake, and a reload still shows intake. The existing click smoke still passes.
