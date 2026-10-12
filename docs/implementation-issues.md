@@ -250,6 +250,8 @@ Reviewed on 2026-10-11 against today's tree, before the server move and the erro
 
 No findings qualify as bugs. T4 has nothing to fix from this review.
 
+**T4 closure (2026-10-12):** Re-checked after T2 and T3 on the current tree. The bug list is still empty; no production or test changes were required. Items tagged closed-by-T2 were resolved by commits `995d0cc` and `07f5af1` (modules and tests under `src/server/`, no `server/` imports). Items tagged closed-by-T3 were resolved by commit `d7b94ad` (spec §4 classifier and recovery; legacy `gemini-unavailable`, `quota`, `upstream`, and `network` are not emitted to the UI). The two deferred entries above are unchanged.
+
 Glossary copy, the ADR 0002–0006 consequences that still hold, and the non-stream error envelope were checked and did not produce a bug. Ordinary English ("at least one file is required"), the footer denial ("not a legal-compliance conclusion"), and the health route's plain `ok` success body were not filed. Superseded ADR sentences (the Vite stack, and "every adjudication stays confirmed") were not filed.
 
 ### Deferred

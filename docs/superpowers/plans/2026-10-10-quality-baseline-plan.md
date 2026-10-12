@@ -93,7 +93,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T1 — Review findings
 
-- [ ] **Do:** Review the current tree against spec §3 and append the findings to `docs/implementation-issues.md`. Do not change production code.
+- [x] **Do:** Review the current tree against spec §3 and append the findings to `docs/implementation-issues.md`. Do not change production code.
 - **Consumes:** none
 - **Produces:** Entries tagged **bug** or **deferred**. Each bug names the file, the expected behaviour, and the observed behaviour. Duplicate `server/` and `src/server/` modules are noted as closed by T2, not as bugs. `gemini-unavailable`, combined `quota`, and HTTP 403 reported as `auth` are noted as closed by T3, not as bugs. Style notes are omitted.
 - **Acceptance:** The new section exists. A reader can tell which findings T4 must fix and which are only logged. If nothing qualifies as a bug, the section says so.
@@ -105,7 +105,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T2 — Move the remaining server modules
 
-- [ ] **Do:** Move `server/{model,pipeline,pdf,intake}.ts` and their tests under `src/server/`, point `src/server/http/*` at the new paths, and delete `server/`.
+- [x] **Do:** Move `server/{model,pipeline,pdf,intake}.ts` and their tests under `src/server/`, point `src/server/http/*` at the new paths, and delete `server/`.
 - **Consumes:** none from T1. T1 is ordered first only so the review describes the pre-move tree.
 - **Produces:** Those modules importable from `src/server/model.ts`, `src/server/pipeline.ts`, `src/server/pdf.ts`, and `src/server/intake.ts`. No source file imports `server/`. Vitest no longer includes `server/**/*.test.ts`.
 - **Acceptance:** `src/server/model.test.ts` contains both the logging cases and the former `server/model.test.ts` cases, without two tests that assert the same expectation. `src/server/pipeline.test.ts` likewise contains the deadline and text-budget cases plus the former `server/pipeline*.test.ts` cases. PDF and intake tests sit beside their modules. Existing assertions stay green with updated imports and nothing else. Import suffixes are preserved per file.
@@ -118,7 +118,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T3 — Classify live model failures
 
-- [ ] **Do:** One classifier produces the spec §4 codes and messages. Extraction recovery, the rate-limit wait, and interview copy follow that code. HTTP 200 error bodies do not trigger a repair call.
+- [x] **Do:** One classifier produces the spec §4 codes and messages. Extraction recovery, the rate-limit wait, and interview copy follow that code. HTTP 200 error bodies do not trigger a repair call.
 - **Consumes:** The moved `ModelError`, `createDefaultTransport`, `requestStructuredJson`, `mapModelError`, and `mapExtractionStreamError`.
 - **Produces:** `classifyModelFailure(input: { status?: number; errorType?: string; retryAfterHeader?: string; network?: boolean })` returns `{ code: ModelFailureCode; message: string; retryAfterSeconds?: number }`. `errorType` wins over `status`. `retryAfterSeconds` is set only for `rate-limited`, from a finite positive header, and is never above 120. `ModelError` carries `retryAfterSeconds?`. `errorRecoveryAction` returns `retry`, `use-recorded`, or `back-to-intake` per spec §4.4, and any other code returns `back-to-intake`. `ApiError` and both the JSON envelope and the SSE `error` event carry `retryAfterSeconds?`. `INTERPRET_ONE_FIELD_SENTENCE` is `You can still answer with only this field's value.`
 - **Acceptance:**
@@ -136,7 +136,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T4 — Fix review bugs
 
-- [ ] **Do:** Fix every T1 finding tagged **bug**, one failing test at a time, against the moved tree. Do not fix deferred findings.
+- [x] **Do:** Fix every T1 finding tagged **bug**, one failing test at a time, against the moved tree. Do not fix deferred findings.
 - **Consumes:** The T1 bug list. T3's codes, so a finding that was only the old error mapping is already resolved and is not fixed again.
 - **Produces:** Each bug's regression test, and a note on that T1 entry naming the test. Deferred entries stay in `docs/implementation-issues.md` with no production change.
 - **Acceptance:** Every bug entry is either fixed with a test that failed before the fix, or marked resolved by T2 or T3 with the reason. Deferred entries are unchanged in behaviour. An empty bug list makes this subtask done with no code change.
