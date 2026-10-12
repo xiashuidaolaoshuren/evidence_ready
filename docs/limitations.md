@@ -1,0 +1,12 @@
+# Limitations
+
+Current list for this personal project. The historical proposal is [PROPOSAL.md](../PROPOSAL.md). These bullets follow proposal §6 except the time-budget note, plus the multi-user item that proposal folded into the kettle-schema bullet.
+
+- **Quote verification is syntactic, not semantic.** The system proves the cited text appears on the named page. It does not prove the quote supports the extracted value. **Open** — sub-project 5, field semantics.
+- **No "not applicable"; prose fields never conflict.** A field without boil-dry protection reports as missing, not absent. Two different intended-use descriptions show one value and one alternate, not a disagreement to resolve. **Open** — sub-project 5.
+- **Live extraction failures share one message and the wrong recovery.** Distinct API failures used to share one "temporarily unavailable" message, and Retry was offered for geo and unknown-model errors. **Resolved** — this quality-baseline sub-project, spec section 4.
+- **Kettle schema only, and no OCR, images, spreadsheets, or cross-device persistence.** Uploads accept any PDF or TXT, but extraction, questions, and readiness all run against one 15-field electric-kettle table. A toaster spec is still scored as a kettle dossier. **Open** — sub-projects 4, 6, and 7.
+- **Multi-user review.** Needs accounts, which the Next.js migration excluded. **Open** — not in the seven sub-projects.
+- **Minor bugs may remain.** The quality-baseline review recorded no bugs. Two findings stay deferred: the moved modules `src/server/model.ts`, `src/server/pipeline.ts`, `src/server/pdf.ts`, and `src/server/intake.ts` still do not import `server-only`; a private JSON extract body with `mode: "live"` still returns `invalid-intake` and does not run the pipeline. Multipart upload on a private deployment was wired later and is not part of that deferral. **Open** — quality baseline, those deferred entries.
+- **Model harness is weak.** Live extraction and answer interpretation can vary from run to run. There is no pinned-output harness that scores or diffs model results. **Open** — sub-project 3.
+- **UI may not be aligned.** Screens now follow the prototype for the screens listed in the quality-baseline spec section 7, including overlay keyboard behaviour. **Resolved** — this quality-baseline sub-project, section 7.

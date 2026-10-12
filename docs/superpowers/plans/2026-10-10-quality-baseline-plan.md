@@ -197,7 +197,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T9 — Limitations document
 
-- [ ] **Do:** Add `docs/limitations.md` from spec §8 and point `README.md` at it.
+- [x] **Do:** Add `docs/limitations.md` from spec §8 and point `README.md` at it.
 - **Consumes:** T1 deferred entries, T3's resolved error behaviour, T4's fixed or empty bug list, and T7's completed screen list.
 - **Produces:** One bullet per spec §8 row, marked **Open** or **Resolved**, with the owning sub-project. The "minor bugs" bullet stays **Open** and names the deferred entries when any exist. It is **Resolved** only when T1 recorded no bugs and no deferred findings.
 - **Acceptance:** `PROPOSAL.md` has no diff. README still links `PROPOSAL.md` as the historical proposal, no longer says assessors must follow it literally, and links `docs/limitations.md`.

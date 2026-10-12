@@ -68,6 +68,9 @@ export function useOverlayKeyboard(options: {
 
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
+      if (!first || !last) {
+        return;
+      }
       const active = document.activeElement;
 
       if (event.shiftKey && active === first) {
@@ -81,8 +84,9 @@ export function useOverlayKeyboard(options: {
 
     document.addEventListener("keydown", onKeyDown);
     const focusables = getFocusableElements(container);
-    if (focusables.length > 0) {
-      focusables[0].focus();
+    const initial = focusables[0];
+    if (initial) {
+      initial.focus();
     }
 
     return () => {

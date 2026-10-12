@@ -2,7 +2,7 @@
 
 Evidence intake for product documentation — turns messy supplier documents into a traceable product dossier and reports authoring readiness.
 
-**Read [PROPOSAL.md](./PROPOSAL.md) first.** It explains the problem, architecture, and assessment context. The brief requires assessors to follow the run instructions there literally.
+**Read [PROPOSAL.md](./PROPOSAL.md) first.** It is the historical proposal: the problem, architecture, and assessment context. Current limitations are in [docs/limitations.md](./docs/limitations.md).
 
 ## Quick start
 

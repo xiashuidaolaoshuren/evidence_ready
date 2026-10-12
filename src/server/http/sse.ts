@@ -30,6 +30,7 @@ export function extractionSseResponse(
     code: string;
     message: string;
     envVar?: string;
+    retryAfterSeconds?: number;
     failedSources?: RunExtractionResult["failedSources"];
   },
 ): Response {
