@@ -247,6 +247,119 @@ describe("InterviewWorkspace interpretation", () => {
   });
 });
 
+describe("InterviewWorkspace overlay focus", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  it("returns focus to the dossier source control when the drawer closes", async () => {
+    const user = userEvent.setup();
+    const evidence = {
+      documentId: "supplier-spec",
+      page: 2,
+      quote: "2200 W",
+      surroundingWindow: "Rated power: 2200 W on page 2.",
+    };
+
+    render(
+      <InterviewWorkspace
+        dossier={[
+          dossierField("capacity", "confirmed", {
+            label: "Capacity",
+            originalValue: "1.5 L",
+            normalizedValue: "1.5 L",
+          }),
+          dossierField("importer-contact", "missing", {
+            label: "Importer or responsible-party contact",
+            valueKind: "prose",
+          }),
+          dossierField("rated-power", "confirmed", {
+            label: "Rated power",
+            group: "Electrical and Physical Information",
+            originalValue: "2200 W",
+            normalizedValue: "2200 W",
+            evidence: [evidence],
+          }),
+        ]}
+        interview={interviewBase}
+        onAnswer={vi.fn()}
+        onLeaveUnresolved={vi.fn()}
+        onContinuePastBudget={vi.fn()}
+        onContinueSupporting={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    const sourceLink = screen.getByRole("button", {
+      name: /supplier-spec\.pdf p\.2/i,
+    });
+    sourceLink.focus();
+    await user.click(sourceLink);
+
+    expect(screen.getByRole("complementary", { name: /source evidence/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /close/i }));
+    expect(document.activeElement).toBe(sourceLink);
+  });
+
+  it("returns focus to submit after discarding proposal confirmation", async () => {
+    const user = userEvent.setup();
+    vi.mocked(interpretAnswer).mockResolvedValue({
+      proposals: [
+        {
+          fieldKey: "importer-contact",
+          proposedValue: "Acme Imports GmbH",
+          answerText: "Acme Imports GmbH — rated power should be 2200 W",
+        },
+      ],
+    });
+
+    render(
+      <InterviewWorkspace
+        dossier={[
+          dossierField("capacity", "confirmed"),
+          dossierField("importer-contact", "missing", {
+            label: "Importer or responsible-party contact",
+            valueKind: "prose",
+          }),
+          dossierField("rated-power", "unverified", {
+            label: "Rated power",
+            group: "Electrical and Physical Information",
+            originalValue: "2200 W",
+            normalizedValue: "2200 W",
+          }),
+        ]}
+        interview={interviewBase}
+        onAnswer={vi.fn()}
+        onLeaveUnresolved={vi.fn()}
+        onContinuePastBudget={vi.fn()}
+        onContinueSupporting={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    const submitButton = screen.getByRole("button", { name: /submit answer/i });
+    submitButton.focus();
+    await user.type(
+      screen.getByRole("textbox", { name: /your answer/i }),
+      "Acme Imports GmbH — rated power should be 2200 W",
+    );
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("dialog", {
+          name: /the model interpreted your answer into proposed updates/i,
+        }),
+      ).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: /discard all/i }));
+    expect(document.activeElement).toBe(submitButton);
+  });
+});
+
 describe("InterviewWorkspace public demo", () => {
   afterEach(() => {
     cleanup();

@@ -34,4 +34,53 @@ describe("SourceDrawer", () => {
     await user.click(screen.getByRole("button", { name: /close/i }));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it("calls onClose when Escape is pressed while open", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+
+    render(
+      <SourceDrawer
+        open
+        kind="Evidence"
+        title="Rated power"
+        meta="supplier-spec · page 2"
+        passage="2200 W rated power"
+        quote="2200 W"
+        note="Note"
+        onClose={onClose}
+      />,
+    );
+
+    await user.keyboard("{Escape}");
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("keeps Tab focus inside the drawer", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <>
+        <button type="button">Behind page</button>
+        <SourceDrawer
+          open
+          kind="Evidence"
+          title="Rated power"
+          meta="meta"
+          passage="passage text"
+          quote=""
+          note="Note"
+          onClose={vi.fn()}
+        />
+      </>,
+    );
+
+    const closeButton = screen.getByRole("button", { name: /close/i });
+    closeButton.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(closeButton);
+    expect(document.activeElement).not.toBe(
+      screen.getByRole("button", { name: /behind page/i }),
+    );
+  });
 });

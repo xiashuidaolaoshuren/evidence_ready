@@ -172,7 +172,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T7 — Prototype pass and overlay keyboard behaviour
 
-- [ ] **Do:** Match the spec §7 screens to the prototype at 1280px and 800px, and make the three interview overlays keyboard-usable.
+- [x] **Do:** Match the spec §7 screens to the prototype at 1280px and 800px, and make the three interview overlays keyboard-usable.
 - **Consumes:** The current screens and `prototype/DESIGN.md`. The six core tokens already in `src/app/globals.css` stay verbatim unless a comparison shows drift.
 - **Produces:** Updated layout and copy only where the app disagrees with the prototype. Screenshots at `docs/design/quality-baseline/{screen}-{width}-{before|after}.png` for each spec §7 screen, `width` being `1280` or `800`. Overlay behaviour: Tab stays inside the open dialog; Escape closes the source drawer; Escape discards proposals; Escape does not close the budget pause; closing the drawer or proposals returns focus to the opener; the focused control has a visible ring.
 - **Acceptance:** A side-by-side look at the screenshots shows the prototype's spacing, type, and layout, while every status, marker, and blocker remains visible. The public demo still hides live extraction and upload. Keyboard behaviour is covered by tests, not by the screenshots. No new screen or component.

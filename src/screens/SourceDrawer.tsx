@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { useOverlayKeyboard } from "./overlay-focus";
 
 export interface SourceDrawerProps {
   open: boolean;
@@ -34,6 +36,13 @@ export function SourceDrawer({
   note,
   onClose,
 }: SourceDrawerProps) {
+  const drawerRef = useRef<HTMLElement>(null);
+  useOverlayKeyboard({
+    open,
+    containerRef: drawerRef,
+    onEscape: onClose,
+  });
+
   const highlighted = highlightPassage(passage, quote);
   const parts = highlighted.split(quote);
   const showMark = quote.length > 0 && highlighted.includes(quote);
@@ -46,6 +55,7 @@ export function SourceDrawer({
         aria-hidden={!open}
       />
       <aside
+        ref={drawerRef}
         className={`drawer ${open ? "open" : ""}`}
         aria-label="Source evidence"
         aria-hidden={!open}

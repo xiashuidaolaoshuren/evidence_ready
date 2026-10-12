@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { useOverlayKeyboard } from "./overlay-focus";
 import { KETTLE_FIELDS } from "@/domain/fields";
 import type { Proposal } from "@/domain/types";
 
@@ -19,10 +21,23 @@ export function ProposalConfirmation({
   onAccept,
   onDiscard,
 }: ProposalConfirmationProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useOverlayKeyboard({
+    open: true,
+    containerRef: dialogRef,
+    onEscape: onDiscard,
+  });
+
   const acceptLabel = `Write ${proposals.length} proposal${proposals.length === 1 ? "" : "s"}`;
 
   return (
-    <div className="modal" role="dialog" aria-modal="true" aria-labelledby="proposal-title">
+    <div
+      ref={dialogRef}
+      className="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="proposal-title"
+    >
       <p className="eyebrow mb-[6px]">Proposal · awaiting confirmation</p>
       <h3 id="proposal-title">
         The model interpreted your answer into proposed updates

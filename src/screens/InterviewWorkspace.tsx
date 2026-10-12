@@ -10,6 +10,7 @@ import { BudgetPause } from "./BudgetPause";
 import { DossierPanel } from "./DossierPanel";
 import { ProposalConfirmation } from "./ProposalConfirmation";
 import { QuestionPanel } from "./QuestionPanel";
+import { rememberOverlayOpener, restoreOverlayOpener } from "./overlay-focus";
 import { SourceDrawer } from "./SourceDrawer";
 
 export const INTERVIEW_REFRESH_NOTE =
@@ -91,12 +92,29 @@ export function InterviewWorkspace({
   const [flashKey, setFlashKey] = useState<string | null>(null);
   const [flashEpoch, setFlashEpoch] = useState(0);
   const interpretAbort = useRef<AbortController | null>(null);
+  const overlayOpenerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     return () => {
       interpretAbort.current?.abort();
       interpretAbort.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    const raw = window.sessionStorage.getItem("evidenceready.qb-proposals");
+    if (!raw) {
+      return;
+    }
+    window.sessionStorage.removeItem("evidenceready.qb-proposals");
+    try {
+      const proposals = JSON.parse(raw) as Proposal[];
+      if (Array.isArray(proposals) && proposals.length > 0) {
+        setPendingProposals(proposals);
+      }
+    } catch {
+      /* ignore invalid screenshot fixture */
+    }
   }, []);
 
   const question = useMemo(
@@ -113,7 +131,18 @@ export function InterviewWorkspace({
   const showEssentialsClear =
     interview.essentialsClear === true && !question && !showBudgetPause;
 
+  function closeDrawer() {
+    setDrawerOpen(false);
+    restoreOverlayOpener(overlayOpenerRef);
+  }
+
+  function clearPendingProposals() {
+    setPendingProposals(null);
+    restoreOverlayOpener(overlayOpenerRef);
+  }
+
   function openEvidence(evidence: Evidence, label: string) {
+    rememberOverlayOpener(overlayOpenerRef);
     setDrawer({
       kind: "Evidence",
       title: label,
@@ -130,6 +159,7 @@ export function InterviewWorkspace({
     const rejected = field?.rejectedCandidates[rejectedIndex];
     if (!field || !rejected) return;
 
+    rememberOverlayOpener(overlayOpenerRef);
     setDrawer({
       kind: "Rejected candidate",
       title: field.label,
@@ -180,6 +210,7 @@ export function InterviewWorkspace({
     interpretAbort.current?.abort();
     const controller = new AbortController();
     interpretAbort.current = controller;
+    rememberOverlayOpener(overlayOpenerRef);
 
     try {
       const { proposals } = await interpretAnswer(
@@ -309,7 +340,7 @@ export function InterviewWorkspace({
         passage={drawer.passage}
         quote={drawer.quote}
         note={drawer.note}
-        onClose={() => setDrawerOpen(false)}
+        onClose={closeDrawer}
       />
 
       <BudgetPause
@@ -323,10 +354,10 @@ export function InterviewWorkspace({
           <ProposalConfirmation
             proposals={pendingProposals}
             onAccept={(proposals) => {
-              setPendingProposals(null);
+              clearPendingProposals();
               onAnswer({ type: "apply-proposals", proposals });
             }}
-            onDiscard={() => setPendingProposals(null)}
+            onDiscard={clearPendingProposals}
           />
         </div>
       ) : null}
