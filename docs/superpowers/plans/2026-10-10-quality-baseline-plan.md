@@ -159,7 +159,7 @@ Dependency notation: `Blocked by: T1` means start after T1 is done.
 
 ### T6 — Live extract path with a fake model
 
-- [ ] **Do:** Run the real extract handler and the real pipeline with a fake transport that returns one valid extraction JSON. Assert the SSE `result` dossier came from that JSON.
+- [x] **Do:** Run the real extract handler and the real pipeline with a fake transport that returns one valid extraction JSON. Assert the SSE `result` dossier came from that JSON.
 - **Consumes:** `createExtractHandler` and `runExtraction` after the move.
 - **Produces:** `src/server/http/createExtractHandler.live-path.test.ts`
 - **Acceptance:** The test performs no network call and adds no test-only route or production branch. The fake transport is the existing `HttpDeps.transport` slot. A transport that throws is not this test. Recorded mode is not this test.

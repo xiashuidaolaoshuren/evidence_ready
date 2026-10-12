@@ -1,7 +1,8 @@
 import "server-only";
 
 import { z } from "zod";
-import { runExtraction } from "../pipeline";
+import { validateIntakeUploads } from "../intake";
+import { runExtraction, type PipelineUpload } from "../pipeline";
 import { withContentLengthLimit } from "./content-length";
 import { jsonError } from "./json-error";
 import { mapExtractionStreamError } from "./map-stream-error";
@@ -18,6 +19,32 @@ const fixtureExtractSchema = z.object({
   mode: z.enum(["recorded", "live"]),
 });
 
+function uploadIdFromFilename(filename: string): string {
+  return filename.replace(/\.[^.]+$/, "");
+}
+
+async function pipelineUploadsFromForm(
+  formData: FormData,
+): Promise<PipelineUpload[]> {
+  const uploads: PipelineUpload[] = [];
+
+  for (const entry of formData.getAll("files")) {
+    if (typeof entry === "string") {
+      continue;
+    }
+    const file = entry as File;
+    const buffer = Buffer.from(await file.arrayBuffer());
+    uploads.push({
+      id: uploadIdFromFilename(file.name),
+      filename: file.name,
+      mediaType: file.type || "application/octet-stream",
+      buffer,
+    });
+  }
+
+  return uploads;
+}
+
 export function createExtractHandler(deps: HttpDeps) {
   const run = deps.runExtractionFn ?? runExtraction;
 
@@ -27,6 +54,26 @@ export function createExtractHandler(deps: HttpDeps) {
 
     if (publicDemo && contentType.includes("multipart/form-data")) {
       return liveExtractUnavailableResponse();
+    }
+
+    if (contentType.includes("multipart/form-data")) {
+      const uploads = await pipelineUploadsFromForm(await request.formData());
+      const intakeError = validateIntakeUploads(uploads);
+      if (intakeError) {
+        return jsonError(intakeError.code, intakeError.message);
+      }
+
+      return extractionSseResponse(
+        {
+          mode: "live",
+          uploads,
+          transport: deps.transport,
+          apiKey: deps.apiKey,
+          signal: request.signal,
+        },
+        run,
+        mapExtractionStreamError,
+      );
     }
 
     if (!contentType.includes("application/json")) {
