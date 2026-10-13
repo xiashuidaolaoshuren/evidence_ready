@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "../src/domain/upload-limits.js";
+import { MAX_TOTAL_UPLOAD_BYTES, MAX_UPLOAD_COUNT } from "../domain/upload-limits.js";
 import { validateIntakeUploads } from "./intake.js";
 
 const FOUR_MB = MAX_TOTAL_UPLOAD_BYTES;

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { ExtractionCounts, FailedSource } from "@/state/app-state";
 import { essentialKeys } from "@/domain/fields";
@@ -13,7 +14,12 @@ import {
 export interface ExtractionProgressProps {
   mode: ExtractionMode;
   outcome: "working" | "failed" | "succeeded";
-  error: { code: string; message: string; envVar?: string } | null;
+  error: {
+    code: string;
+    message: string;
+    envVar?: string;
+    retryAfterSeconds?: number;
+  } | null;
   counts: ExtractionCounts | null;
   failedSources: FailedSource[] | undefined;
   dossier: DossierField[];
@@ -67,6 +73,39 @@ const SUMMARY_STATS: Array<{
   { key: "missing", label: "fields missing" },
 ];
 
+function useRateLimitWaitSeconds(
+  code: string | undefined,
+  retryAfterSeconds: number | undefined,
+): number {
+  const [secondsLeft, setSecondsLeft] = useState(0);
+
+  useEffect(() => {
+    if (
+      code !== "rate-limited" ||
+      retryAfterSeconds === undefined ||
+      retryAfterSeconds <= 0
+    ) {
+      setSecondsLeft(0);
+      return;
+    }
+
+    setSecondsLeft(retryAfterSeconds);
+    const intervalId = window.setInterval(() => {
+      setSecondsLeft((current) => {
+        if (current <= 1) {
+          window.clearInterval(intervalId);
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [code, retryAfterSeconds]);
+
+  return secondsLeft;
+}
+
 export function ExtractionProgress({
   mode,
   outcome,
@@ -83,6 +122,15 @@ export function ExtractionProgress({
   const steps = mode === "recorded" ? RECORDED_STEPS : LIVE_STEPS;
   const recovery =
     outcome === "failed" && error ? errorRecoveryAction(error.code) : null;
+  const rateLimitSecondsLeft = useRateLimitWaitSeconds(
+    error?.code,
+    error?.retryAfterSeconds,
+  );
+  const retryDisabled =
+    error?.code === "rate-limited" &&
+    error.retryAfterSeconds !== undefined &&
+    error.retryAfterSeconds > 0 &&
+    rateLimitSecondsLeft > 0;
   const revealOutcome = outcome !== "working";
 
   return (
@@ -122,7 +170,7 @@ export function ExtractionProgress({
           ))}
         </div>
 
-        {revealOutcome && outcome === "failed" && error && recovery === "missing-key" ? (
+        {revealOutcome && outcome === "failed" && error && error.code === "missing-key" ? (
           <div
             className="card mt-[var(--gap-md)]"
             style={{
@@ -131,6 +179,7 @@ export function ExtractionProgress({
             }}
           >
             <h3>Live extraction needs an OpenRouter API key</h3>
+            <p className="note mt-[8px]">{error.message}</p>
             <p className="note mt-[8px]">
               The key is read on the server only, never in the browser. Add{" "}
               <span className="meta text-[var(--fg)]">
@@ -138,13 +187,9 @@ export function ExtractionProgress({
               </span>{" "}
               to{" "}
               <span className="meta text-[var(--fg)]">.env.local</span> and
-              restart the dev server, then retry. Your uploaded files are still
-              staged.
+              restart the dev server. Your uploaded files are still staged.
             </p>
             <div className="mt-[var(--gap-md)] flex flex-wrap items-center gap-[var(--gap-md)]">
-              <Button type="button" variant="secondary" onClick={onRetry}>
-                Retry live extraction
-              </Button>
               <Button type="button" onClick={onUseRecorded}>
                 Use recorded extraction instead
               </Button>
@@ -152,7 +197,11 @@ export function ExtractionProgress({
           </div>
         ) : null}
 
-        {revealOutcome && outcome === "failed" && error && recovery !== "missing-key" ? (
+        {revealOutcome &&
+        outcome === "failed" &&
+        error &&
+        recovery === "use-recorded" &&
+        error.code !== "missing-key" ? (
           <div
             className="card mt-[var(--gap-md)]"
             style={{
@@ -163,12 +212,43 @@ export function ExtractionProgress({
             <h3>Extraction could not complete</h3>
             <p className="note mt-[8px]">{error.message}</p>
             <div className="mt-[var(--gap-md)] flex flex-wrap items-center gap-[var(--gap-md)]">
+              <Button type="button" onClick={onUseRecorded}>
+                Use recorded extraction
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {revealOutcome &&
+        outcome === "failed" &&
+        error &&
+        recovery !== "use-recorded" ? (
+          <div
+            className="card mt-[var(--gap-md)]"
+            style={{
+              borderColor:
+                "color-mix(in oklch, var(--st-conflict) 45%, var(--border))",
+            }}
+          >
+            <h3>Extraction could not complete</h3>
+            <p className="note mt-[8px]">
+              {error.message}
+              {rateLimitSecondsLeft > 0
+                ? ` Wait ${rateLimitSecondsLeft} seconds before retrying.`
+                : null}
+            </p>
+            <div className="mt-[var(--gap-md)] flex flex-wrap items-center gap-[var(--gap-md)]">
               {recovery === "back-to-intake" ? (
                 <Button type="button" variant="secondary" onClick={onBackToIntake}>
                   Back to intake
                 </Button>
               ) : (
-                <Button type="button" variant="secondary" onClick={onRetry}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={onRetry}
+                  disabled={retryDisabled}
+                >
                   Retry
                 </Button>
               )}

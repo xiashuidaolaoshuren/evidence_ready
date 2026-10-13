@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { readSseEvents } from "./test-helpers";
-import { ExtractionTimeoutError } from "../../../server/pipeline.js";
+import { ExtractionTimeoutError } from "../pipeline.js";
 import { createExtractHandler } from "./createExtractHandler";
 
 describe("createExtractHandler stream errors", () => {

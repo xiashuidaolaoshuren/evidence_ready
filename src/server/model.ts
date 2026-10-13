@@ -5,6 +5,7 @@ import {
   type ProposalResponse,
 } from "@/domain/schemas";
 import { ZodError } from "zod";
+import { classifyModelFailure, type ModelFailure } from "./model-failure";
 
 export const OPENROUTER_MODEL = "deepseek/deepseek-v4-flash-vision-exp";
 export const OPENROUTER_CHAT_URL =
@@ -93,22 +94,42 @@ function messageKeys(
 
 export type ModelErrorCode =
   | "missing-key"
-  | "quota"
+  | "rate-limited"
+  | "out-of-credits"
   | "auth"
-  | "network"
-  | "malformed"
-  | "upstream";
+  | "model-blocked"
+  | "model-not-found"
+  | "text-too-large"
+  | "model-unavailable"
+  | "model-rejected"
+  | "malformed";
 
 export class ModelError extends Error {
   readonly code: ModelErrorCode;
   readonly envVar?: string;
+  readonly retryAfterSeconds?: number;
 
-  constructor(code: ModelErrorCode, message: string, envVar?: string) {
+  constructor(
+    code: ModelErrorCode,
+    message: string,
+    envVar?: string,
+    retryAfterSeconds?: number,
+  ) {
     super(message);
     this.name = "ModelError";
     this.code = code;
     this.envVar = envVar;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
+}
+
+function modelErrorFromFailure(failure: ModelFailure): ModelError {
+  return new ModelError(
+    failure.code,
+    failure.message,
+    undefined,
+    failure.retryAfterSeconds,
+  );
 }
 
 interface ModelCallOptions {
@@ -145,31 +166,38 @@ function mapTransportError(error: unknown): ModelError {
       ? error.status
       : undefined;
 
-  if (status === 401 || status === 403) {
-    return new ModelError("auth", "Model authentication failed.");
-  }
-  if (status === 402 || status === 429) {
-    return new ModelError("quota", "Model quota or rate limit exceeded.");
-  }
+  const errorType =
+    typeof error === "object" &&
+    error !== null &&
+    "errorType" in error &&
+    typeof error.errorType === "string"
+      ? error.errorType
+      : undefined;
+
+  const retryAfterHeader =
+    typeof error === "object" &&
+    error !== null &&
+    "retryAfterHeader" in error &&
+    typeof error.retryAfterHeader === "string"
+      ? error.retryAfterHeader
+      : undefined;
+
   if (error instanceof TypeError) {
-    return new ModelError("network", "Model network request failed.");
+    return modelErrorFromFailure(classifyModelFailure({ network: true }));
   }
 
   const message = error instanceof Error ? error.message.toLowerCase() : "";
-  if (message.includes("quota") || message.includes("rate limit")) {
-    return new ModelError("quota", "Model quota or rate limit exceeded.");
-  }
-  if (message.includes("unauthorized") || message.includes("authentication")) {
-    return new ModelError("auth", "Model authentication failed.");
-  }
-  if (message.includes("fetch failed") || message.includes("network")) {
-    return new ModelError("network", "Model network request failed.");
-  }
-  if (status !== undefined && status >= 500) {
-    return new ModelError("upstream", "Model service request failed.");
+  if (
+    status === undefined &&
+    errorType === undefined &&
+    (message.includes("fetch failed") || message.includes("network"))
+  ) {
+    return modelErrorFromFailure(classifyModelFailure({ network: true }));
   }
 
-  return new ModelError("upstream", "Model service request failed.");
+  return modelErrorFromFailure(
+    classifyModelFailure({ status, errorType, retryAfterHeader }),
+  );
 }
 
 async function callTransport(
@@ -215,9 +243,33 @@ async function requestStructuredJson(
         attempt: "repair",
         contentPreview: previewContent(repaired),
       });
-      throw new ModelError("malformed", "The model returned malformed JSON.");
+      throw new ModelError("malformed", "The model returned an invalid response.");
     }
   }
+}
+
+interface OpenRouterChatPayload {
+  error?: {
+    message?: string;
+    metadata?: { error_type?: string };
+  };
+  choices?: Array<{
+    finish_reason?: string;
+    message?: Record<string, unknown> & { content?: string };
+  }>;
+}
+
+function throwClassifiedResponseFailure(
+  response: Response,
+  errorObject: OpenRouterChatPayload["error"],
+): never {
+  throw modelErrorFromFailure(
+    classifyModelFailure({
+      status: response.status,
+      errorType: errorObject?.metadata?.error_type,
+      retryAfterHeader: response.headers.get("Retry-After") ?? undefined,
+    }),
+  );
 }
 
 export function createDefaultTransport(
@@ -249,17 +301,21 @@ export function createDefaultTransport(
 
     if (!response.ok) {
       const body = await response.text();
+      let errorType: string | undefined;
+      try {
+        const parsed = JSON.parse(body) as OpenRouterChatPayload;
+        errorType = parsed.error?.metadata?.error_type;
+      } catch {
+        // non-JSON error bodies fall back to HTTP status
+      }
       throw Object.assign(new Error(body || response.statusText), {
         status: response.status,
+        errorType,
+        retryAfterHeader: response.headers.get("Retry-After") ?? undefined,
       });
     }
 
-    const payload = (await response.json()) as {
-      choices?: Array<{
-        finish_reason?: string;
-        message?: Record<string, unknown> & { content?: string };
-      }>;
-    };
+    const payload = (await response.json()) as OpenRouterChatPayload;
     const choice = payload.choices?.[0];
     const message = choice?.message;
     const content = message?.content ?? "";
@@ -274,6 +330,10 @@ export function createDefaultTransport(
       emptyContent: content.length === 0,
       messageKeys: messageKeys(message),
     });
+
+    if (payload.error && content.length === 0) {
+      throwClassifiedResponseFailure(response, payload.error);
+    }
 
     return content;
   };

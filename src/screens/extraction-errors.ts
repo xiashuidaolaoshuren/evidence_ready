@@ -1,12 +1,23 @@
-const TRANSIENT_ERROR_CODES = new Set([
-  "network",
-  "quota",
-  "auth",
-  "gemini-unavailable",
+const RETRY_ERROR_CODES = new Set([
+  "rate-limited",
+  "model-unavailable",
+  "malformed",
+  "extraction-timeout",
   "internal-error",
 ]);
 
-const FILE_ERROR_CODES = new Set([
+const USE_RECORDED_ERROR_CODES = new Set([
+  "auth",
+  "missing-key",
+  "out-of-credits",
+  "model-not-found",
+  "model-rejected",
+]);
+
+const BACK_TO_INTAKE_ERROR_CODES = new Set([
+  "model-blocked",
+  "text-too-large",
+  "live-unavailable",
   "encrypted",
   "image-only",
   "empty",
@@ -17,17 +28,17 @@ const FILE_ERROR_CODES = new Set([
   "all-sources-failed",
 ]);
 
-export type ErrorRecoveryAction = "retry" | "back-to-intake" | "missing-key";
+export type ErrorRecoveryAction = "retry" | "use-recorded" | "back-to-intake";
 
 export function errorRecoveryAction(code: string): ErrorRecoveryAction {
-  if (code === "missing-key") {
-    return "missing-key";
-  }
-  if (TRANSIENT_ERROR_CODES.has(code)) {
+  if (RETRY_ERROR_CODES.has(code)) {
     return "retry";
   }
-  if (FILE_ERROR_CODES.has(code)) {
+  if (USE_RECORDED_ERROR_CODES.has(code)) {
+    return "use-recorded";
+  }
+  if (BACK_TO_INTAKE_ERROR_CODES.has(code)) {
     return "back-to-intake";
   }
-  return "retry";
+  return "back-to-intake";
 }

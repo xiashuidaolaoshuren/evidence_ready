@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { useOverlayKeyboard } from "./overlay-focus";
 
 export interface BudgetPauseProps {
   open: boolean;
@@ -7,15 +9,28 @@ export interface BudgetPauseProps {
 }
 
 export function BudgetPause({ open, onContinue, onFinish }: BudgetPauseProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useOverlayKeyboard({
+    open,
+    containerRef: dialogRef,
+    trapFocus: true,
+  });
+
   if (!open) {
     return null;
   }
 
   return (
     <div className="modal-veil open">
-      <div className="modal" role="dialog" aria-modal="true">
+      <div
+        ref={dialogRef}
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="budget-pause-title"
+      >
         <p className="eyebrow mb-[6px]">Question budget</p>
-        <h3>Five questions asked — pause and check in</h3>
+        <h3 id="budget-pause-title">Five questions asked — pause and check in</h3>
         <p className="note mt-[8px]">
           The planner does not abandon a blocker it has already identified, but
           it will not keep you in an unbounded interview either. Continue, or

@@ -4,7 +4,7 @@ import {
   runExtraction,
   type RunExtractionInput,
   type RunExtractionResult,
-} from "../../../server/pipeline";
+} from "../pipeline";
 
 function sseEncode(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -30,6 +30,7 @@ export function extractionSseResponse(
     code: string;
     message: string;
     envVar?: string;
+    retryAfterSeconds?: number;
     failedSources?: RunExtractionResult["failedSources"];
   },
 ): Response {
@@ -63,6 +64,9 @@ export function extractionSseResponse(
             code: mapped.code,
             message: mapped.message,
             ...(mapped.envVar ? { envVar: mapped.envVar } : {}),
+            ...(mapped.retryAfterSeconds !== undefined
+              ? { retryAfterSeconds: mapped.retryAfterSeconds }
+              : {}),
             ...(mapped.failedSources
               ? { failedSources: mapped.failedSources }
               : {}),

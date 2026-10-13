@@ -6,27 +6,25 @@ import {
   ExtractionTimeoutError,
   TextTooLargeError,
   type RunExtractionResult,
-} from "../../../server/pipeline";
-import { ModelError } from "../../../server/model";
-import { PdfExtractError } from "../../../server/pdf";
+} from "../pipeline";
+import { ModelError } from "../model";
+import { PdfExtractError } from "../pdf";
 
 export function mapExtractionStreamError(error: unknown): {
   code: string;
   message: string;
   envVar?: string;
+  retryAfterSeconds?: number;
   failedSources?: RunExtractionResult["failedSources"];
 } {
   if (error instanceof ModelError) {
-    if (error.code === "upstream") {
-      return {
-        code: "gemini-unavailable",
-        message: "The extraction model is temporarily unavailable.",
-      };
-    }
     return {
       code: error.code,
       message: error.message,
       envVar: error.envVar,
+      ...(error.retryAfterSeconds !== undefined
+        ? { retryAfterSeconds: error.retryAfterSeconds }
+        : {}),
     };
   }
   if (error instanceof ExtractionTimeoutError) {

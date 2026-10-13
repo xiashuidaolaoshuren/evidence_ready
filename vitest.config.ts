@@ -15,7 +15,6 @@ export default defineConfig({
     include: [
       "src/**/*.test.ts",
       "src/**/*.test.tsx",
-      "server/**/*.test.ts",
       "fixtures/**/*.test.ts",
     ],
     setupFiles: ["./vitest.setup.ts"],
