@@ -19,14 +19,23 @@ const fixtureExtractSchema = z.object({
   mode: z.enum(["recorded", "live"]),
 });
 
-function uploadIdFromFilename(filename: string): string {
-  return filename.replace(/\.[^.]+$/, "");
+function uploadIdFromFilename(filename: string, used: Set<string>): string {
+  const base = filename.replace(/\.[^.]+$/, "");
+  let id = base;
+  let suffix = 2;
+  while (used.has(id)) {
+    id = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  used.add(id);
+  return id;
 }
 
 async function pipelineUploadsFromForm(
   formData: FormData,
 ): Promise<PipelineUpload[]> {
   const uploads: PipelineUpload[] = [];
+  const usedIds = new Set<string>();
 
   for (const entry of formData.getAll("files")) {
     if (typeof entry === "string") {
@@ -35,7 +44,7 @@ async function pipelineUploadsFromForm(
     const file = entry as File;
     const buffer = Buffer.from(await file.arrayBuffer());
     uploads.push({
-      id: uploadIdFromFilename(file.name),
+      id: uploadIdFromFilename(file.name, usedIds),
       filename: file.name,
       mediaType: file.type || "application/octet-stream",
       buffer,
