@@ -187,17 +187,51 @@ describe("InterviewWorkspace interpretation", () => {
     expect(interpretAnswer).toHaveBeenCalledTimes(1);
   });
 
+  it("shows malformed message and one-field sentence when interpret returns no proposals", async () => {
+    const user = userEvent.setup();
+    vi.mocked(interpretAnswer).mockResolvedValue({ proposals: [] });
+
+    await submitInterpretableAnswer(user);
+
+    await waitFor(() => {
+      const alert = screen.getByRole("alert");
+      expect(alert).toHaveTextContent(
+        "The model returned an invalid response.",
+      );
+      expect(alert).toHaveTextContent(INTERPRET_ONE_FIELD_SENTENCE);
+    });
+    expect(screen.queryByText(/please rephrase/i)).not.toBeInTheDocument();
+    expect(interpretAnswer).toHaveBeenCalledTimes(1);
+  });
+
   it("shows the server message and one-field sentence for out-of-credits", async () => {
     const user = userEvent.setup();
     const message =
       "The OpenRouter account has no credits left. Recorded extraction still works.";
-    vi.mocked(interpretAnswer).mockRejectedValue({ code: "out-of-credits", message });
+    vi.mocked(interpretAnswer).mockRejectedValue(
+      new ApiError("out-of-credits", message),
+    );
 
     await submitInterpretableAnswer(user);
 
     await waitFor(() => {
       const alert = screen.getByRole("alert");
       expect(alert).toHaveTextContent(message);
+      expect(alert).toHaveTextContent(INTERPRET_ONE_FIELD_SENTENCE);
+    });
+    expect(screen.queryByText(/please rephrase/i)).not.toBeInTheDocument();
+    expect(interpretAnswer).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows unexpected server error and one-field sentence for non-ApiError failures", async () => {
+    const user = userEvent.setup();
+    vi.mocked(interpretAnswer).mockRejectedValue(new TypeError("boom"));
+
+    await submitInterpretableAnswer(user);
+
+    await waitFor(() => {
+      const alert = screen.getByRole("alert");
+      expect(alert).toHaveTextContent("Unexpected server error.");
       expect(alert).toHaveTextContent(INTERPRET_ONE_FIELD_SENTENCE);
     });
     expect(screen.queryByText(/please rephrase/i)).not.toBeInTheDocument();

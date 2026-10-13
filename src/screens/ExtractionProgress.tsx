@@ -179,6 +179,7 @@ export function ExtractionProgress({
             }}
           >
             <h3>Live extraction needs an OpenRouter API key</h3>
+            <p className="note mt-[8px]">{error.message}</p>
             <p className="note mt-[8px]">
               The key is read on the server only, never in the browser. Add{" "}
               <span className="meta text-[var(--fg)]">

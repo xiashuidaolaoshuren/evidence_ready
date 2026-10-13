@@ -132,31 +132,48 @@ for (const phase of phases) {
     await capture(page, "overlay-budget", phase);
 
     await restoreSession(page, sessions.interviewMissing);
-    await page.evaluate(() => {
-      sessionStorage.setItem(
-        "evidenceready.qb-proposals",
-        JSON.stringify([
-          {
-            fieldKey: "importer-contact",
-            proposedValue: "Acme Imports GmbH",
-            answerText: "Acme Imports GmbH — rated power should be 2200 W",
-          },
-          {
-            fieldKey: "rated-power",
-            proposedValue: "2200 W",
-            answerText: "Acme Imports GmbH — rated power should be 2200 W",
-          },
-        ]),
-      );
-    });
-    await page.reload();
     await expect(page).toHaveURL(/\/interview/);
+    const interpretAnswer =
+      "Acme Imports GmbH — rated power should be 2200 W";
+    await page.route("**/api/interpret", async (route) => {
+      if (route.request().method() !== "POST") {
+        await route.continue();
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          proposals: [
+            {
+              fieldKey: "importer-contact",
+              proposedValue: "Acme Imports GmbH",
+              answerText: interpretAnswer,
+            },
+            {
+              fieldKey: "rated-power",
+              proposedValue: "2200 W",
+              answerText: interpretAnswer,
+            },
+          ],
+        }),
+      });
+    });
+    await page.evaluate(() => {
+      localStorage.setItem("evidenceready.e2e-force-interpret", "1");
+    });
+    await page.getByRole("textbox", { name: /your answer/i }).fill(interpretAnswer);
+    await page.getByRole("button", { name: /submit answer/i }).click();
     await expect(
       page.getByRole("dialog", {
         name: /the model interpreted your answer into proposed updates/i,
       }),
     ).toBeVisible({ timeout: 15_000 });
     await capture(page, "overlay-proposals", phase);
+    await page.unroute("**/api/interpret");
+    await page.evaluate(() => {
+      localStorage.removeItem("evidenceready.e2e-force-interpret");
+    });
 
     await restoreSession(page, sessions.report);
     await expect(page).toHaveURL(/\/report/);

@@ -310,3 +310,31 @@ No separate dead export exists only to preserve these codes. The live mappings a
 - **Observed:** `errorRecoveryAction` treats `network`, `quota`, `auth`, and `gemini-unavailable` as retry. Any code outside the missing-key and file-error sets, including an unknown code, also returns retry.
 
 ---
+
+## 6. Two-axis review fixes (2026-10-13)
+
+Follow-up on the code review of `fix/quality-baseline` vs `main` (spec: quality-baseline design §4–§6).
+
+### Spec findings fixed
+
+| Finding | Fix | Test |
+| --- | --- | --- |
+| `mapTransportError` treated message substrings `"network"` / `"fetch failed"` before `error_type` and HTTP status | Guard substring branch when `status` or `errorType` is present | `src/server/model.test.ts` — classifies transport errors with status and errorType before network message substrings |
+| Missing §4.1 row test for non-JSON after repair | Added characterization test (production already threw `malformed`) | `src/server/model.test.ts` — maps non-JSON after the repair call to a malformed ModelError |
+| Missing-key card omitted server `error.message` (§4.4) | Render `error.message` above `.env.local` copy | `src/screens/ExtractionProgress.test.tsx` — shows missing-key card… |
+| Empty interpret `proposals: []` showed rephrase copy (§4.5) | Fixed malformed message plus one-field sentence | `src/screens/InterviewWorkspace.test.tsx` — shows malformed message… when interpret returns no proposals |
+| Non-`ApiError` interpret failures showed rephrase | `instanceof ApiError` only; fallback uses unexpected server error plus one-field sentence | `src/screens/InterviewWorkspace.test.tsx` — shows unexpected server error… for non-ApiError failures |
+| Test-only `sessionStorage` proposals hook in `InterviewWorkspace` | Removed hook; e2e mocks `/api/interpret`, submits answer, uses `localStorage` `evidenceready.e2e-force-interpret` so public demo still allows one Playwright path | `e2e/quality-baseline-screenshots.spec.ts` overlay-proposals step |
+
+### Kept from Bugbot (not reverted)
+
+Multipart upload ids suffix colliding basenames (`report`, `report-2`, …) in `createExtractHandler.ts` — commit `72433b2`, test `createExtractHandler.upload-id.test.ts`.
+
+### Standards smells deferred (not in this pass)
+
+- `{ code, message, envVar?, retryAfterSeconds? }` redeclared across client and HTTP types
+- `ModelError` positional parameters vs `ApiError` options object
+- Parallel `classifyByErrorType` / `classifyByStatus` cascades in `model-failure.ts`
+- Duplicated failed-extraction cards in `ExtractionProgress.tsx`
+
+---

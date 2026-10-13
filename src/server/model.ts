@@ -187,7 +187,11 @@ function mapTransportError(error: unknown): ModelError {
   }
 
   const message = error instanceof Error ? error.message.toLowerCase() : "";
-  if (message.includes("fetch failed") || message.includes("network")) {
+  if (
+    status === undefined &&
+    errorType === undefined &&
+    (message.includes("fetch failed") || message.includes("network"))
+  ) {
     return modelErrorFromFailure(classifyModelFailure({ network: true }));
   }
 

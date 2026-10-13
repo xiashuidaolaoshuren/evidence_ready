@@ -177,6 +177,9 @@ describe("ExtractionProgress", () => {
         name: /live extraction needs an openrouter api key/i,
       }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText("OpenRouter API key is not configured."),
+    ).toBeInTheDocument();
     expect(screen.getByText(/OPENROUTER_API_KEY=…/)).toBeInTheDocument();
     expect(screen.getByText(/\.env\.local/)).toBeInTheDocument();
     expect(

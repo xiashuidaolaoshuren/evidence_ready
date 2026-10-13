@@ -101,22 +101,6 @@ export function InterviewWorkspace({
     };
   }, []);
 
-  useEffect(() => {
-    const raw = window.sessionStorage.getItem("evidenceready.qb-proposals");
-    if (!raw) {
-      return;
-    }
-    window.sessionStorage.removeItem("evidenceready.qb-proposals");
-    try {
-      const proposals = JSON.parse(raw) as Proposal[];
-      if (Array.isArray(proposals) && proposals.length > 0) {
-        setPendingProposals(proposals);
-      }
-    } catch {
-      /* ignore invalid screenshot fixture */
-    }
-  }, []);
-
   const question = useMemo(
     () => nextQuestion(dossier, interview),
     [dossier, interview],
@@ -193,7 +177,15 @@ export function InterviewWorkspace({
       handleAnswer(parsed);
       return;
     }
-    if (publicDemo && needsInterpretation(fieldKey, answerText)) {
+    const e2eForceInterpret =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem("evidenceready.e2e-force-interpret") ===
+        "1";
+    if (
+      publicDemo &&
+      needsInterpretation(fieldKey, answerText) &&
+      !e2eForceInterpret
+    ) {
       setDemoGuidance(PUBLIC_DEMO_ONE_FIELD_GUIDANCE);
       return;
     }
@@ -220,22 +212,14 @@ export function InterviewWorkspace({
         controller.signal,
       );
       if (proposals.length === 0) {
-        setInterpretError("Could not interpret the answer. Please rephrase.");
+        setInterpretError(
+          `The model returned an invalid response. ${INTERPRET_ONE_FIELD_SENTENCE}`,
+        );
         return;
       }
       setPendingProposals(proposals);
     } catch (error) {
-      const apiError =
-        error instanceof ApiError
-          ? error
-          : typeof error === "object" &&
-              error !== null &&
-              "code" in error &&
-              "message" in error &&
-              typeof (error as ApiError).code === "string" &&
-              typeof (error as ApiError).message === "string"
-            ? (error as ApiError)
-            : null;
+      const apiError = error instanceof ApiError ? error : null;
 
       if (apiError?.code === "rephrase") {
         setInterpretError(apiError.message);
@@ -251,7 +235,9 @@ export function InterviewWorkspace({
         );
         return;
       }
-      setInterpretError("Could not interpret the answer. Please rephrase.");
+      setInterpretError(
+        `Unexpected server error. ${INTERPRET_ONE_FIELD_SENTENCE}`,
+      );
     }
   }
 

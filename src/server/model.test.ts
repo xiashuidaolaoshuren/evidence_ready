@@ -309,6 +309,22 @@ describe("extractCandidates", () => {
     expect(String(transport.mock.calls[1]?.[0])).toContain("schema repair");
   });
 
+  it("maps non-JSON after the repair call to a malformed ModelError", async () => {
+    const transport = transportReturning("{not json", "{not json");
+    await expect(
+      extractCandidates({
+        prompt: "extract",
+        transport,
+        apiKey: "test-key",
+      }),
+    ).rejects.toMatchObject({
+      code: "malformed",
+      message: "The model returned an invalid response.",
+    });
+    expect(transport).toHaveBeenCalledTimes(2);
+    expect(String(transport.mock.calls[1]?.[0])).toContain("schema repair");
+  });
+
   it("maps structurally invalid JSON to a malformed ModelError", async () => {
     const transport = transportReturning(JSON.stringify({ candidates: "nope" }));
     await expect(
@@ -420,6 +436,22 @@ describe("extractCandidates", () => {
     ).rejects.toMatchObject({
       code: "model-unavailable",
       message: "The model could not be reached.",
+    });
+  });
+
+  it("classifies transport errors with status and errorType before network message substrings", async () => {
+    const transport = vi.fn(async () => {
+      throw Object.assign(new Error("network error from provider"), {
+        status: 429,
+        errorType: "rate_limit_exceeded",
+        retryAfterHeader: "30",
+      });
+    });
+    await expect(
+      extractCandidates({ prompt: "extract", transport, apiKey: "k" }),
+    ).rejects.toMatchObject({
+      code: "rate-limited",
+      retryAfterSeconds: 30,
     });
   });
 });
