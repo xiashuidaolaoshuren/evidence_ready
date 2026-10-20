@@ -29,3 +29,7 @@ The model-supplied confidence score is also removed. Verification already answer
 ## Revision, 2026-08-29
 
 The interface stack is React and Vite with Tailwind CSS v4 and shadcn/ui, not Next.js App Router. Document parsing and Gemini calls remain on a same-repo TypeScript server so the API key never reaches the browser. The control plane is unchanged: TypeScript still owns verification, planning, confirmation, and readiness.
+
+## Later narrowing
+
+ADR 0007 narrows the rule that confirmation is only a deterministic quote-presence check. A bounded semantic check may decide that located passages support a value. The model still may not invent fields, phrase questions, auto-resolve disagreements, or decide readiness.

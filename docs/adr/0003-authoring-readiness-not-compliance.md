@@ -20,3 +20,5 @@ UI copy, `PROPOSAL.md`, and the live demo must say “information completeness /
 ## Clarification
 
 2026-09-27: an unadjudicated conflict blocks readiness only when its field is essential. A supporting conflict stays visible and never blocks readiness. This matches the supporting-field rule that those fields enrich the dossier without blocking it.
+
+2026-10-20: ADR 0008 adds one further blocker. A flagged source awaiting review blocks readiness even when every essential field is resolved. Supporting-field disagreements still do not. A not-applicable field needs no value. Readiness remains a workflow judgment, not a compliance score.

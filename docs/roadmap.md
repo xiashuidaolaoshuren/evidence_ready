@@ -37,23 +37,21 @@ Two findings were deferred and are still open:
 
 ## 3. Model harness and metrics
 
-Not started.
+Not started. Scope: [2026-10-20-measurement-blueprints-semantics-design.md](./superpowers/specs/2026-10-20-measurement-blueprints-semantics-design.md).
 
-Pin a model, capture fixtures, and compare schema-valid output so a vendor swap is measured. Score extraction accuracy, unsupported-citation rate, unresolved-field rate, and time to authoring readiness. No compliance score.
+Measure extraction and answer interpretation against human-reviewed expectations. Record semantic failures one case at a time; a new unsupported confirmation or an invented interview proposal blocks a model change. Report latency and review workload separately from human time to readiness. This sub-project measures the failures. It does not ship the semantic check.
 
 ## 4. Multi-category blueprints
 
-Not started.
+Not started. Scope: the same spec.
 
-Add a second product category as another declarative field table. Prompts, question ranking, and readiness follow that table. A document that does not match the selected category is not scored as a kettle.
+Add a household pop-up toaster blueprint. The user selects one category, and each dossier covers one product model. Judge documents individually. Accepted documents can proceed, and a flagged source blocks readiness until the user reviews it. Slot count replaces kettle capacity as the category-specific essential. Operating steps stay supporting.
 
 ## 5. Field semantics
 
-Not started. Depends on sub-project 3.
+Not started. Depends on sub-project 3. Scope: the same spec. Decisions: [ADR 0007](./adr/0007-bounded-semantic-check-may-confirm.md) and [ADR 0008](./adr/0008-one-model-and-reviewed-sources.md).
 
-- Quote verification checks that the cited text supports the value, not only that the quote appears on the named page.
-- A field can be not applicable, instead of missing, when the product does not have that fact.
-- Two different prose values for one field are a conflict to resolve.
+Cited passages must support the whole value. A bounded semantic check may authorize confirmation only after its benchmark passes. An explicit "no", a missing value, and a not-applicable field stay distinct. Differing prose and complete accounts require review; additive lists may combine. A partially supported candidate stays unverified.
 
 ## 6. Richer inputs
 
